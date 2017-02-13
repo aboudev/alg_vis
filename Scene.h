@@ -7,6 +7,18 @@
 
 #include "types.h"
 
+class Dummy {
+public:
+    Dummy(Efficient_ransac &r) {
+        std::cerr << "in dummy" << std::endl;
+        r.set_input(Pwn_vector(10, Point_with_normal()));
+        /*r.add_shape_factory<RansacPlane>();
+        r.preprocess();
+        r.detect();*/
+        std::cerr << "dummy done" << std::endl;
+    }
+};
+
 class Scene
 {
 public:
@@ -67,6 +79,16 @@ private:
     Pwn_vector m_points;
 
     Efficient_ransac m_ransac;
+
+    // dummy class for shapes_range initialization
+    // defined before m_bestshapes
+    // http://stackoverflow.com/questions/4037219/order-of-execution-in-constructor-initialization-list
+    Dummy m_dm;
+
+    Efficient_ransac::Shape_range m_bestshapes;
+
+    // view shapes.
+    bool m_view_shapes;
 
     // color table
     double LUT_Seg[3 * 256];

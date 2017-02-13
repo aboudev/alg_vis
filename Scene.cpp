@@ -17,12 +17,84 @@
 
 #include "render_edges.h"
 
-Scene::Scene()
+// slicer
+#include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
+#include <CGAL/AABB_halfedge_graph_segment_primitive.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/Polygon_mesh_slicer.h>
+
+typedef CGAL::Polyhedron_3<Kernel2> Epic_Polyhedron;
+typedef std::vector<Kernel2::Point_3> Polyline_type;
+typedef std::list<Polyline_type> Polylines;
+typedef CGAL::AABB_halfedge_graph_segment_primitive<Epic_Polyhedron> HGSP;
+typedef CGAL::AABB_traits<Kernel2, HGSP> AABB_traits;
+typedef CGAL::AABB_tree<AABB_traits> AABB_tree;
+
+template <typename K>
+CGAL::Polyhedron_3<K> BboxToPolyhedron(const CGAL::Bbox_3 &bbox) {
+    typedef typename CGAL::Polyhedron_3<K>::Point_3 Point;
+    typedef typename CGAL::Polyhedron_3<K>::Halfedge_handle Halfedge_handle;
+
+    Point p00(bbox.xmin(), bbox.ymin(), bbox.zmin());
+    Point p01(bbox.xmax(), bbox.ymin(), bbox.zmin());
+    Point p02(bbox.xmax(), bbox.ymax(), bbox.zmin());
+    Point p03(bbox.xmin(), bbox.ymax(), bbox.zmin());
+    Point p10(bbox.xmin(), bbox.ymin(), bbox.zmax());
+    Point p11(bbox.xmax(), bbox.ymin(), bbox.zmax());
+    Point p12(bbox.xmax(), bbox.ymax(), bbox.zmax());
+    Point p13(bbox.xmin(), bbox.ymax(), bbox.zmax());
+
+    CGAL::Polyhedron_3<K> p;
+    Halfedge_handle h = p.make_tetrahedron(p01, p10, p00, p03);
+    Halfedge_handle g = h->next()->opposite()->next();
+    p.split_edge(h->next());
+    p.split_edge(g->next());
+    p.split_edge(g);
+    h->next()->vertex()->point() = p11;
+    g->next()->vertex()->point() = p13;
+    g->opposite()->vertex()->point() = p02;
+    Halfedge_handle f = p.split_facet(g->next(), g->next()->next()->next());
+    Halfedge_handle e = p.split_edge(f);
+    e->vertex()->point() = p12;
+    p.split_facet(e, f->next()->next());
+    CGAL_postcondition(p.is_valid());
+
+    return p;
+}
+
+Kernel2::Plane_3 PlaneFromShapeInfo(const Efficient_ransac::Shape &s)
 {
+    std::stringstream sstm(s.info());
+    std::string str;
+    sstm >> str;
+    sstm >> str;
+    sstm >> str;
+    double a = std::atof(str.substr(1, str.size() - 2).c_str());
+    sstm >> str;
+    double b = std::atof(str.substr(0, str.size() - 1).c_str());
+    sstm >> str;
+    double c = std::atof(str.substr(0, str.size() - 2).c_str());
+    sstm >> str;
+    sstm >> str;
+    double d = std::atof(str.substr(0, str.size() - 1).c_str());
+
+    //std::cout << a << " " << b << " " << c << " " << d << std::endl;
+    return Kernel2::Plane_3(a, b, c, d);
+}
+
+Scene::Scene() :
+    m_dm(m_ransac),
+    // no default constructor for shape_range, although invalid
+    m_bestshapes(m_ransac.shapes())
+{
+    std::cerr << "before constructor " << std::endl;
+
     m_pPolyhedron = NULL;
 
     // view options
     m_view_polyhedron = true;
+    m_view_shapes = false;
 
     int i = 0;
     LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.515600;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.531300;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.546900;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.562500;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.578100;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.593800;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.609400;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.625000;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.640600;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.656300;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.671900;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.687500;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.703100;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.718800;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.734400;        LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.000000;    LUT_Seg[i++] = 0.750000;
@@ -119,7 +191,9 @@ void Scene::draw()
     render_line();
     render_plane();
     render_centroid();
-    render_shape();
+
+    if (m_view_shapes)
+        render_shape();
 }
 
 void Scene::render_plane()
@@ -167,7 +241,7 @@ void Scene::render_shape()
     if (m_points.empty())
         return;
 
-    Efficient_ransac::Shape_range shapes = m_ransac.shapes();
+    Efficient_ransac::Shape_range shapes = m_bestshapes;
     Efficient_ransac::Shape_range::iterator it = shapes.begin();
 
     // shape color table
@@ -179,15 +253,14 @@ void Scene::render_shape()
     }
     std::vector<int>::iterator color_itr = color_tab.begin();
 
-    std::set<int> pt_idx_set;
-    for (int i = 0; i < m_points.size(); ++i)
+    std::set<std::size_t> pt_idx_set;
+    for (std::size_t i = 0; i < m_points.size(); ++i)
         pt_idx_set.insert(i);
 
     ::glDisable(GL_LIGHTING);
 
     // draw point cloud with respect color
     ::glPointSize(5.0);
-    shapes = m_ransac.shapes();
     it = shapes.begin();
     while (it != shapes.end()) {
         ::glColor3f(LUT_Seg[(*color_itr) * 3], LUT_Seg[(*color_itr) * 3 + 1], LUT_Seg[(*color_itr) * 3 + 2]);
@@ -200,9 +273,9 @@ void Scene::render_shape()
             // Retrieves point
             const Point_with_normal &p = *(m_points.begin() + (*index_it));
             ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
+            pt_idx_set.erase(*index_it);
             // Proceeds with next point.
             index_it++;
-            pt_idx_set.erase(int(*index_it));
         }
         // Proceeds with next detected shape.
         it++;
@@ -212,33 +285,59 @@ void Scene::render_shape()
     std::cout << m_points.size() << " --- " << pt_idx_set.size() << std::endl;
     ::glColor3f(0.0, 0.0, 0.0);
     ::glBegin(GL_POINTS);
-    for (std::set<int>::iterator itr = pt_idx_set.begin();
+    for (std::set<std::size_t>::iterator itr = pt_idx_set.begin();
         itr != pt_idx_set.end(); ++itr)
         ::glVertex3d(m_points[*itr].first.x(), m_points[*itr].first.y(), m_points[*itr].first.z());
     ::glEnd();
 
-    ::glLineWidth(1.0);
-    it = shapes.begin();
-    color_itr = color_tab.begin();
-    while (it != shapes.end()) {
-        ::glColor3f(LUT_Seg[(*color_itr) * 3], LUT_Seg[(*color_itr) * 3 + 1], LUT_Seg[(*color_itr) * 3 + 2]);
-        ++color_itr;
-        ::glBegin(GL_LINES);
-        // Iterates through point indices assigned to each detected shape.
-        std::vector<std::size_t>::const_iterator
-            index_it = (*it)->indices_of_assigned_points().begin();
-        while (index_it != (*it)->indices_of_assigned_points().end()) {
-            // Retrieves point
-            const Point_with_normal &p = *(m_points.begin() + (*index_it));
-            ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
-            ::glVertex3d(p.first.x() + p.second.x() * 0.05, p.first.y() + p.second.y() * 0.05, p.first.z() + p.second.z() * 0.05);
-            // Proceeds with next point.
-            index_it++;
-        }
-        // Proceeds with next detected shape.
-        it++;
-        ::glEnd();
+    //::glLineWidth(1.0);
+    //it = shapes.begin();
+    //color_itr = color_tab.begin();
+    //while (it != shapes.end()) {
+    //    ::glColor3f(LUT_Seg[(*color_itr) * 3], LUT_Seg[(*color_itr) * 3 + 1], LUT_Seg[(*color_itr) * 3 + 2]);
+    //    ++color_itr;
+    //    ::glBegin(GL_LINES);
+    //    // Iterates through point indices assigned to each detected shape.
+    //    std::vector<std::size_t>::const_iterator
+    //        index_it = (*it)->indices_of_assigned_points().begin();
+    //    while (index_it != (*it)->indices_of_assigned_points().end()) {
+    //        // Retrieves point
+    //        const Point_with_normal &p = *(m_points.begin() + (*index_it));
+    //        ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
+    //        ::glVertex3d(p.first.x() + p.second.x() * 0.05, p.first.y() + p.second.y() * 0.05, p.first.z() + p.second.z() * 0.05);
+    //        // Proceeds with next point.
+    //        index_it++;
+    //    }
+    //    // Proceeds with next detected shape.
+    //    it++;
+    //    ::glEnd();
+    //}
+
+    // bounding box to polyhedron
+    /*Epic_Polyhedron bxply = BboxToPolyhedron<Kernel2>(m_bbox);
+    CGAL::Polygon_mesh_slicer<Epic_Polyhedron, Kernel2> slicer(bxply);*/
+    // draw slicer plane
+    glLineWidth(3.0);
+    glColor3f(0.8f, 0.8f, 0.8f);
+    for (auto &s : shapes) {
+        CGAL::Bbox_3 bx = m_points[*(s->indices_of_assigned_points().begin())].first.bbox();
+        for (auto &p : s->indices_of_assigned_points())
+            bx += m_points[p].first.bbox();
+        Epic_Polyhedron bxply = BboxToPolyhedron<Kernel2>(bx);
+        CGAL::Polygon_mesh_slicer<Epic_Polyhedron, Kernel2> slicer(bxply);
+
+        Kernel2::Plane_3 p = PlaneFromShapeInfo(*s);
+        Polylines pls;
+        slicer(p, std::back_inserter(pls));
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glBegin(GL_POLYGON);
+        //glBegin(GL_LINE_LOOP);
+        for (auto &pl : pls)
+            for (auto &p : pl)
+                glVertex3d(p.x(), p.y(), p.z());
+        glEnd();
     }
+
     ::glEnable(GL_LIGHTING);
 }
 
@@ -422,7 +521,7 @@ int Scene::shape_detection()
     // Perform detection several times and choose result with highest coverage.
     Efficient_ransac::Shape_range shapes = m_ransac.shapes();
     FT best_coverage = 0;
-    for (size_t i = 0; i<3; i++) {
+    for (size_t i = 0; i < 6; i++) {
         // Reset timer.
         time.reset();
         time.start();
@@ -438,12 +537,21 @@ int Scene::shape_detection()
         std::cout << m_ransac.shapes().end() - m_ransac.shapes().begin() << " primitives, "
             << coverage << " coverage" << std::endl;
 
+        std::size_t cnt = 0;
+        for (auto &s : m_ransac.shapes()) {
+            //std::cout << s->info() << std::endl;
+            //std::cout << s->indices_of_assigned_points().size() << std::endl;
+            cnt += s->indices_of_assigned_points().size();
+        }
+        std::cout << m_points.size() << " = " << cnt << " + " << m_ransac.number_of_unassigned_points() << std::endl;
+
         // Choose result with highest coverage.
         if (coverage > best_coverage) {
             best_coverage = coverage;
             // Efficient_ransac::shapes() provides
             // an iterator range to the detected shapes. 
             shapes = m_ransac.shapes();
+            m_bestshapes = shapes;
         }
     }
 
@@ -476,14 +584,26 @@ int Scene::shape_detection()
 
     // plane regularization in CGAL 4.9
     // described in "LOD Generation for Urban Scenes", Verdie. et al
-    //CGAL::regulariz_planes(ransac,
-    //    true, //Regularize parallelism
-    //    true, // Regularize orthogonality
-    //    false, // Do not regularize coplanarity
-    //    true, // Regularize Z-symmetry (default)
-    //    10); // 10 degrees of tolerance for parallelism / orthogonality
+    CGAL::regularize_planes(m_ransac,
+        true, //Regularize parallelism
+        true, // Regularize orthogonality
+        false, // Do not regularize coplanarity
+        true, // Regularize Z-symmetry (default)
+        10); // 10 degrees of tolerance for parallelism / orthogonality
 
     std::cout << "done" << std::endl;
+
+    m_view_shapes = true;
+
+    std::cout << "(" << m_bbox.xmin() << ", " << m_bbox.ymin() << ", " << m_bbox.zmin() << ")" << std::endl;
+    std::cout << "(" << m_bbox.xmax() << ", " << m_bbox.ymax() << ", " << m_bbox.zmax() << ")" << std::endl;
+    if (!m_points.empty()) {
+        m_bbox = m_points.begin()->first.bbox();
+        for (auto &p : m_points)
+            m_bbox = m_bbox + p.first.bbox();
+        std::cout << "(" << m_bbox.xmin() << ", " << m_bbox.ymin() << ", " << m_bbox.zmin() << ")" << std::endl;
+        std::cout << "(" << m_bbox.xmax() << ", " << m_bbox.ymax() << ", " << m_bbox.zmax() << ")" << std::endl;
+    }
 
     return EXIT_SUCCESS;
 }

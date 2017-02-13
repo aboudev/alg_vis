@@ -22,7 +22,7 @@ typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
 #include <CGAL/property_map.h>
 #include <CGAL/Shape_detection_3.h>
 // plane regularization in CGAL 4.9
-// #include <CGAL/regularize_planes.h>
+#include <CGAL/regularize_planes.h>
 
 // Type declarations
 typedef CGAL::Exact_predicates_inexact_constructions_kernel  Kernel2;
