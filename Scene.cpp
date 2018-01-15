@@ -584,7 +584,12 @@ int Scene::shape_detection()
 
     // plane regularization in CGAL 4.9
     // described in "LOD Generation for Urban Scenes", Verdie. et al
-    CGAL::regularize_planes(m_ransac,
+    Efficient_ransac::Plane_range planes = m_ransac.planes();
+    CGAL::regularize_planes(m_points,
+        Point_map(),
+        planes,
+        CGAL::Shape_detection_3::Plane_map<Traits>(),
+        CGAL::Shape_detection_3::Point_to_shape_index_map<Traits>(m_points, planes),
         true, //Regularize parallelism
         true, // Regularize orthogonality
         false, // Do not regularize coplanarity
