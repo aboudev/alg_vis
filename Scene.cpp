@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <QApplication>
 #include <QString>
 #include <QTextStream>
 #include <QFileInfo>
