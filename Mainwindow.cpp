@@ -46,15 +46,10 @@ void Mainwindow::updateViewerBBox()
 {
   scene->update_bbox();
   const Scene::Bbox bbox = scene->bbox();
-  const double xmin = bbox.xmin();
-  const double ymin = bbox.ymin();
-  const double zmin = bbox.zmin();
-  const double xmax = bbox.xmax();
-  const double ymax = bbox.ymax();
-  const double zmax = bbox.zmax();
-  qglviewer::Vec 
-    vec_min(xmin, ymin, zmin),
-    vec_max(xmax, ymax, zmax);
+  const qglviewer::Vec vec_min(
+    bbox.xmin(), bbox.ymin(), bbox.zmin());
+  const qglviewer::Vec vec_max(
+    bbox.xmax(), bbox.ymax(), bbox.zmax());
   viewer->setSceneBoundingBox(vec_min,vec_max);
   viewer->camera()->showEntireScene();
 }
@@ -62,15 +57,11 @@ void Mainwindow::updateViewerBBox()
 void Mainwindow::open(QString filename)
 {
   QFileInfo fileinfo(filename);
-  if(fileinfo.isFile() && fileinfo.isReadable())
-  {
-    int index = scene->open(filename);
-    if(index >= 0)
-    {
+  if (fileinfo.isFile() && fileinfo.isReadable()) {
+    if (scene->open(filename) >= 0) {
       QSettings settings;
-      settings.setValue("OFF open directory",
-        fileinfo.absoluteDir().absolutePath());
-      this->addToRecentFiles(filename);
+      settings.setValue("OFF open directory", fileinfo.absoluteDir().absolutePath());
+      addToRecentFiles(filename);
 
       // update bbox
       updateViewerBBox();
@@ -100,7 +91,7 @@ void Mainwindow::dropEvent(QDropEvent *event)
 {
   Q_FOREACH(QUrl url, event->mimeData()->urls()) {
     QString filename = url.toLocalFile();
-    if(!filename.isEmpty()) {
+    if (!filename.isEmpty()) {
       QTextStream(stderr) << QString("dropEvent(\"%1\")\n").arg(filename);
       open(filename);
     }
@@ -123,15 +114,14 @@ void Mainwindow::dragEnterEvent(QDragEnterEvent *event)
 void Mainwindow::on_actionLoadPolyhedron_triggered()
 {
   QSettings settings;
-  QString directory = settings.value("OFF open directory",
-    QDir::current().dirName()).toString();
-  QStringList filenames = 
-    QFileDialog::getOpenFileNames(this,
+  QString directory = settings.value("OFF open directory", QDir::current().dirName()).toString();
+  QStringList filenames = QFileDialog::getOpenFileNames(
+    this,
     tr("Load polyhedron..."),
     directory,
     tr("OFF files (*.off)\n"
     "All files (*)"));
-  if(!filenames.isEmpty()) {
+  if (!filenames.isEmpty()) {
     Q_FOREACH(QString filename, filenames) {
       open(filename);
     }
@@ -144,6 +134,7 @@ void Mainwindow::on_actionSave_snapshot_triggered()
   viewer->saveSnapshot(QString("snapshot.png"));
   QApplication::restoreOverrideCursor();
 }
+
 void Mainwindow::on_actionCopy_snapshot_triggered()
 {
   // copy snapshot to clipboard
@@ -207,13 +198,12 @@ void Mainwindow::on_actionShape_detection_triggered()
 void Mainwindow::on_actionSurface_simplification_triggered()
 {
   QSettings settings;
-  QString directory = settings.value("OFF open directory",
-    QDir::current().dirName()).toString();
-  QStringList filenames =
-    QFileDialog::getOpenFileNames(this,
-      tr("Load surface mesh..."),
-      directory,
-      tr("OFF files (*.off)"));
+  QString directory = settings.value("OFF open directory", QDir::current().dirName()).toString();
+  QStringList filenames = QFileDialog::getOpenFileNames(
+    this,
+    tr("Load surface mesh..."),
+    directory,
+    tr("OFF files (*.off)"));
 
   QString filename;
   if (!filenames.isEmpty())
@@ -234,32 +224,8 @@ void Mainwindow::on_actionView_polyhedron_triggered()
 
 void Mainwindow::connectActions()
 {
-  // Edit menu actions
-
-  // Show menu actions
-  /*QObject::connect(this->actionShow_Axis, SIGNAL(toggled(bool)),
-    viewer, SLOT(toggleShowAxis(bool)));
-  QObject::connect(this->actionShow_Vertex, SIGNAL(toggled(bool)),
-    viewer, SLOT(toggleShowVertex(bool)));
-  QObject::connect(this->actionShow_DEdge, SIGNAL(toggled(bool)),
-    viewer, SLOT(toggleShowDEdge(bool)));
-  QObject::connect(this->actionShow_VEdge, SIGNAL(toggled(bool)),
-    viewer, SLOT(toggleShowVEdge(bool)));
-  QObject::connect(this->actionShow_Facet, SIGNAL(toggled(bool)),
-    viewer, SLOT(toggleShowFacet(bool)));
-  QObject::connect(this->actionFlat, SIGNAL(toggled(bool)),
-    viewer, SLOT(toggleFlat(bool)));*/
-
-  // Preferences
-  /*QObject::connect(this->actionPreferences, SIGNAL(triggered()),
-    viewer, SLOT(setPreferences()));*/
-
   // connects actionQuit (Ctrl+Q) and qApp->quit()
   connect(actionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 
   connect(this, SIGNAL(openRecentFile(QString)), this, SLOT(open(QString)));
-
-  // Viewer signals
-  /*QObject::connect(this, SIGNAL(sceneChanged()),
-    viewer, SLOT(updateGL()));*/
 }
