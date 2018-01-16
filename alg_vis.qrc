@@ -2,7 +2,7 @@
   <qresource prefix="/cgal/icons" >
     <file>resources/cgal_logo.xpm</file>
   </qresource>
-  <qresource prefix="/cgal/CGAL_demo" >
-    <file alias="about.html" >resources/about.html</file>
+  <qresource prefix="/cgal/CGAL_demo">
+    <file alias="about.html">resources/about.html</file>
   </qresource>
 </RCC>

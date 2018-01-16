@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+#include "Mainwindow.h"
 #include "Scene.h"
 #include <CGAL/Qt/debug.h>
 
@@ -13,19 +13,15 @@
 #include <QMessageBox>
 #include <qlabel.h>
 
-#include "ui_MainWindow.h"
-
 #include <QMimeData> 
 
-
-MainWindow::MainWindow(QWidget* parent) :
+Mainwindow::Mainwindow(QWidget* parent) :
   CGAL::Qt::DemosMainWindow(parent)
 {
-  ui = new Ui::MainWindow;
-  ui->setupUi(this);
+  setupUi(this);
 
   // saves some pointers from ui, for latter use.
-  m_pViewer = ui->viewer;
+  m_pViewer = Ui_Mainwindow::viewer;
 
   // does not save the state of the viewer 
   m_pViewer->setStateFileName(QString::null);
@@ -37,15 +33,15 @@ MainWindow::MainWindow(QWidget* parent) :
   m_pScene = new Scene;
   m_pViewer->setScene(m_pScene);
 
-  ui->menuHelp->addAction(actionAbout);
+  menuHelp->addAction(actionAbout);
   connectActions();
 
-  this->addRecentFiles(ui->menuFile, ui->actionQuit);
+  this->addRecentFiles(menuFile, actionQuit);
   connect(this, SIGNAL(openRecentFile(QString)),
     this, SLOT(open(QString)));
 
   // About menu
-  // addAboutCGAL() is a function in DemoMainWindow
+  // addAboutCGAL() is a function in DemoMainwindow
   //   it will add a menu action "About CGAL..." to Help menu and connect to popupAboutCGAL
   //   default popupAboutCGAL points to a fixed file directory ":/cgal/help/about_CGAL.html"
   //   We can override it with our directory in function popupAboudCGAL() function
@@ -54,7 +50,7 @@ MainWindow::MainWindow(QWidget* parent) :
   readSettings();
 }
 
-void MainWindow::popupAboutDemo()
+void Mainwindow::popupAboutDemo()
 {
   // overwrite popupAboutDemo to hard code the text
   QString about_txt("<h2>CGAL Algorithm Application</h2>");
@@ -84,7 +80,7 @@ void MainWindow::popupAboutDemo()
   return;
 }
 
-void MainWindow::connectActions()
+void Mainwindow::connectActions()
 {
   // Edit menu actions
 
@@ -107,13 +103,13 @@ void MainWindow::connectActions()
     m_pViewer, SLOT(setPreferences()));*/
 
   // Help menu actions
-  QObject::connect(ui->actionViewer_Help, SIGNAL(triggered()),
+  QObject::connect(actionViewer_Help, SIGNAL(triggered()),
     m_pViewer, SLOT(help()));
   QObject::connect(actionAbout, SIGNAL(triggered()),
     this, SLOT(popupAboutDemo()));
 
   // connects actionQuit (Ctrl+Q) and qApp->quit()
-  connect(ui->actionQuit, SIGNAL(triggered()),
+  connect(actionQuit, SIGNAL(triggered()),
     this, SLOT(quit()));
 
   // Viewer signals
@@ -121,18 +117,13 @@ void MainWindow::connectActions()
     m_pViewer, SLOT(updateGL()));*/
 }
 
-MainWindow::~MainWindow()
-{
-  delete ui;
-}
-
-void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+void Mainwindow::dragEnterEvent(QDragEnterEvent *event)
 {
   if (event->mimeData()->hasFormat("text/uri-list"))
     event->acceptProposedAction();
 }
 
-void MainWindow::dropEvent(QDropEvent *event)
+void Mainwindow::dropEvent(QDropEvent *event)
 {
   Q_FOREACH(QUrl url, event->mimeData()->urls()) {
     QString filename = url.toLocalFile();
@@ -144,7 +135,7 @@ void MainWindow::dropEvent(QDropEvent *event)
   event->acceptProposedAction();
 }
 
-void MainWindow::updateViewerBBox()
+void Mainwindow::updateViewerBBox()
 {
   m_pScene->update_bbox();
   const Scene::Bbox bbox = m_pScene->bbox();
@@ -161,13 +152,13 @@ void MainWindow::updateViewerBBox()
   m_pViewer->camera()->showEntireScene();
 }
 
-void MainWindow::on_actionView_polyhedron_triggered()
+void Mainwindow::on_actionView_polyhedron_triggered()
 {
   m_pScene->toggle_view_poyhedron();
   m_pViewer->update();
 }
 
-void MainWindow::on_actionRefine_loop_triggered()
+void Mainwindow::on_actionRefine_loop_triggered()
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   m_pScene->refine_loop();
@@ -176,7 +167,7 @@ void MainWindow::on_actionRefine_loop_triggered()
 }
 
 
-void MainWindow::open(QString filename)
+void Mainwindow::open(QString filename)
 {
   QFileInfo fileinfo(filename);
   if(fileinfo.isFile() && fileinfo.isReadable())
@@ -196,30 +187,30 @@ void MainWindow::open(QString filename)
   }
 }
 
-void MainWindow::readSettings()
+void Mainwindow::readSettings()
 {
-  this->readState("MainWindow", Size|State);
+  this->readState("Mainwindow", Size|State);
 }
 
-void MainWindow::writeSettings()
+void Mainwindow::writeSettings()
 {
-  this->writeState("MainWindow");
+  this->writeState("Mainwindow");
   std::cerr << "Write setting... done.\n";
 }
 
-void MainWindow::quit()
+void Mainwindow::quit()
 {
   writeSettings();
   close();
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void Mainwindow::closeEvent(QCloseEvent *event)
 {
   writeSettings();
   event->accept();
 }
 
-void MainWindow::on_actionLoadPolyhedron_triggered()
+void Mainwindow::on_actionLoadPolyhedron_triggered()
 {
   QSettings settings;
   QString directory = settings.value("OFF open directory",
@@ -238,18 +229,18 @@ void MainWindow::on_actionLoadPolyhedron_triggered()
 }
 
 
-void MainWindow::setAddKeyFrameKeyboardModifiers(::Qt::KeyboardModifiers m)
+void Mainwindow::setAddKeyFrameKeyboardModifiers(::Qt::KeyboardModifiers m)
 {
   m_pViewer->setAddKeyFrameKeyboardModifiers(m);
 }
 
-void MainWindow::on_actionSave_snapshot_triggered()
+void Mainwindow::on_actionSave_snapshot_triggered()
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   m_pViewer->saveSnapshot(QString("snapshot.png"));
   QApplication::restoreOverrideCursor();
 }
-void MainWindow::on_actionCopy_snapshot_triggered()
+void Mainwindow::on_actionCopy_snapshot_triggered()
 {
   // copy snapshot to clipboard
   QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -261,7 +252,7 @@ void MainWindow::on_actionCopy_snapshot_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::on_actionFit_triangles_triggered()
+void Mainwindow::on_actionFit_triangles_triggered()
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   m_pScene->fit_triangles();
@@ -269,7 +260,7 @@ void MainWindow::on_actionFit_triangles_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::on_actionFit_edges_triggered()
+void Mainwindow::on_actionFit_edges_triggered()
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   m_pScene->fit_edges();
@@ -277,7 +268,7 @@ void MainWindow::on_actionFit_edges_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::on_actionFit_vertices_triggered()
+void Mainwindow::on_actionFit_vertices_triggered()
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   m_pScene->fit_vertices();
@@ -285,7 +276,7 @@ void MainWindow::on_actionFit_vertices_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::on_actionShape_detection_triggered()
+void Mainwindow::on_actionShape_detection_triggered()
 {
   const QString fileName = QFileDialog::getOpenFileName(
     this,
@@ -302,7 +293,7 @@ void MainWindow::on_actionShape_detection_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::on_actionSurface_simplification_triggered()
+void Mainwindow::on_actionSurface_simplification_triggered()
 {
   QSettings settings;
   QString directory = settings.value("OFF open directory",

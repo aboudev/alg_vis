@@ -3,23 +3,22 @@
 
 #include <QtOpenGL/qgl.h>
 #include <CGAL/Qt/DemosMainWindow.h>
+#include "ui_Mainwindow.h"
 
 class QDragEnterEvent;
 class QDropEvent;
 class Scene;
 class Viewer;
-namespace Ui {
-  class MainWindow;
-}
 
-
-class MainWindow : 
-  public CGAL::Qt::DemosMainWindow
+class Mainwindow :
+  public CGAL::Qt::DemosMainWindow,
+  public Ui_Mainwindow
 {
   Q_OBJECT
+
 public:
-  MainWindow(QWidget* parent = 0);
-  ~MainWindow();
+  Mainwindow(QWidget* parent = 0);
+  ~Mainwindow() {}
 
 public slots:
   void updateViewerBBox();
@@ -65,7 +64,6 @@ private:
 private:
   Scene* m_pScene;
   Viewer* m_pViewer;
-  Ui::MainWindow* ui;
 };
 
 #endif // ifndef MAINWINDOW_H

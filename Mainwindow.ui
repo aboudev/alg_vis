@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>Mainwindow</class>
+ <widget class="QMainWindow" name="Mainwindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,7 +14,7 @@
    <string>Visualization</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="demo_playground.qrc">
+   <iconset resource="alg_vis.qrc">
     <normaloff>:/cgal/icons/resources/cgal_logo.xpm</normaloff>:/cgal/icons/resources/cgal_logo.xpm</iconset>
   </property>
   <property name="locale">
@@ -273,7 +273,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="demo_playground.qrc"/>
+  <include location="alg_vis.qrc"/>
  </resources>
  <connections/>
 </ui>

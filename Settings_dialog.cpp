@@ -1,13 +1,13 @@
-#include "dialSettings.h"
+#include "Settings_dialog.h"
 
-SettingsDialog::SettingsDialog(QWidget *parent)
-  : QDialog(parent)
+Settings_dialog::Settings_dialog(QWidget *parent) :
+  QDialog(parent)
 {
   setupUi(this);
   loadFromSettings();
 }
 
-void SettingsDialog::loadFromSettings()
+void Settings_dialog::loadFromSettings()
 {
   QSettings settings("settings.ini", QSettings::IniFormat);
   settings.beginGroup("APP");
@@ -15,7 +15,7 @@ void SettingsDialog::loadFromSettings()
   settings.endGroup();
 }
 
-void SettingsDialog::saveToSettings()
+void Settings_dialog::saveToSettings()
 {
   QSettings settings("settings.ini", QSettings::IniFormat);
   settings.beginGroup("APP");
@@ -23,7 +23,7 @@ void SettingsDialog::saveToSettings()
   settings.endGroup();
 }
 
-void SettingsDialog::accept()
+void Settings_dialog::accept()
 {
   saveToSettings();
 

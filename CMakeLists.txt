@@ -1,6 +1,6 @@
-set(PRJ_NAME demo_playground)
+set(PRJ_NAME alg_vis)
 
-project( ${PRJ_NAME} )
+project(${PRJ_NAME})
 
 cmake_minimum_required(VERSION 3.1)
 if(NOT POLICY CMP0070 AND POLICY CMP0053)
@@ -40,7 +40,7 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
   include_directories (${QGLVIEWER_INCLUDE_DIR})
 
   # ui files, created with Qt Designer
-  qt5_wrap_ui( UI_FILES MainWindow.ui dialSettings.ui)
+  qt5_wrap_ui( UI_FILES Mainwindow.ui Settings_dialog.ui)
 
   # qrc files (resources files, that contain icons, at least)
   qt5_add_resources (CGAL_Qt5_RESOURCE_FILES ${PRJ_NAME}.qrc)
@@ -48,8 +48,8 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
   # cpp files
   add_executable(${PRJ_NAME}
     ${PRJ_NAME}.cpp
-    MainWindow.cpp Viewer.cpp
-    dialSettings.cpp
+    Mainwindow.cpp Viewer.cpp
+    Settings_dialog.cpp
     Scene.cpp
     Color_256.cpp
     ${UI_FILES} ${CGAL_Qt5_RESOURCE_FILES} ${CGAL_Qt5_MOC_FILES})
