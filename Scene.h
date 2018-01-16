@@ -89,10 +89,6 @@ private:
 
   // view shapes.
   bool m_view_shapes;
-
-  // color table
-  double LUT_Seg[3 * 256];
-
 }; // end class Scene
 
 

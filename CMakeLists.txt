@@ -29,7 +29,7 @@ find_package(OpenGL)
 
 # Find QGLViewer
 if(Qt5_FOUND)
-    find_package(QGLViewer )
+  find_package(QGLViewer)
 endif(Qt5_FOUND)
 
 if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
@@ -40,7 +40,7 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
   include_directories (${QGLVIEWER_INCLUDE_DIR})
 
   # ui files, created with Qt Designer
-  qt5_wrap_ui( UI_FILES MainWindow.ui )
+  qt5_wrap_ui( UI_FILES MainWindow.ui dialSettings.ui)
 
   # qrc files (resources files, that contain icons, at least)
   qt5_add_resources (CGAL_Qt5_RESOURCE_FILES ${PRJ_NAME}.qrc)
@@ -49,9 +49,9 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
   add_executable(${PRJ_NAME}
     ${PRJ_NAME}.cpp
     MainWindow.cpp Viewer.cpp
-    # dialSettings.cpp
+    dialSettings.cpp
     Scene.cpp
-    # ColorCheatSheet.cpp
+    Color_256.cpp
     ${UI_FILES} ${CGAL_Qt5_RESOURCE_FILES} ${CGAL_Qt5_MOC_FILES})
 
   qt5_use_modules(${PRJ_NAME} Xml Script OpenGL)
