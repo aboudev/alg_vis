@@ -59,7 +59,7 @@ public:
   void fit_triangles();
 
   // RANSAC shape detection on point cloud algorithm
-  int shape_detection();
+  int shape_detection(const std::string &fname);
 
   // triangulated surface mesh simplification algorithm
   //int surface_simplification();

@@ -287,8 +287,17 @@ void MainWindow::on_actionFit_vertices_triggered()
 
 void MainWindow::on_actionShape_detection_triggered()
 {
+  const QString fileName = QFileDialog::getOpenFileName(
+    this,
+    tr("Open point with normal"),
+    ".",
+    tr("Point Cloud File (*.pwn)"));
+
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  m_pScene->shape_detection();
+
+  m_pScene->shape_detection(fileName.toStdString());
+
+  updateViewerBBox();
   m_pViewer->update();
   QApplication::restoreOverrideCursor();
 }

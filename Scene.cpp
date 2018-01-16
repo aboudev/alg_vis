@@ -161,21 +161,13 @@ int Scene::open(QString filename)
 
 void Scene::update_bbox()
 {
+  if(m_pPolyhedron == nullptr
+    || m_pPolyhedron->empty()) {
+    std::cout << "(no / empty polyhedron)." << std::endl;
+    return;
+  }
+
   std::cout << "Compute bbox...";
-  m_bbox = Bbox();
-
-  if(m_pPolyhedron == NULL)
-  {
-    std::cout << "failed (no polyhedron)." << std::endl;
-    return;
-  }
-
-  if(m_pPolyhedron->empty())
-  {
-    std::cout << "failed (empty polyhedron)." << std::endl;
-    return;
-  }
-
   Polyhedron::Point_iterator it = m_pPolyhedron->points_begin();
   m_bbox = (*it).bbox();
   for(; it != m_pPolyhedron->points_end();it++)
@@ -471,29 +463,24 @@ void Scene::fit_vertices()
 /* RANSAC Shape Detection Algorithm                                     */
 /* http://doc.cgal.org/latest/Point_set_shape_detection_3/index.html    */
 /************************************************************************/
-int Scene::shape_detection()
+int Scene::shape_detection(const std::string &fname)
 {
   std::cout << "Shape detection...";
-
-  // QFileDialog
-  /*QString fileName = QFileDialog::getOpenFileName(this,
-  tr("Open point with normal"), ".", tr("Point Cloud File (*.pwn)") );*/
-  std::string fileName("data/cube.pwn");
 
   m_points.clear();
   // Loads point set from a file. 
   // read_xyz_points_and_normals takes an OutputIterator for storing the points
   // and a property map to store the normal vector with each point.
-  std::ifstream stream(fileName);
+  std::ifstream stream(fname);
   if (!stream ||
     !CGAL::read_xyz_points_and_normals(stream,
       std::back_inserter(m_points),
       Point_map(),
-      Normal_map()))
-  {
+      Normal_map())) {
     std::cerr << "Error: cannot read file cube.pwn" << std::endl;
     return EXIT_FAILURE;
   }
+
   // Instantiates shape detection engine.
   // Provides the input data.
   m_ransac.set_input(m_points);
@@ -503,7 +490,6 @@ int Scene::shape_detection()
   //m_ransac.detect();
   //// Prints number of detected shapes.
   //std::cout << m_ransac.shapes().end() - m_ransac.shapes().begin() << " shapes detected." << std::endl;
-
 
   // Measures time before setting up the shape detection.
   CGAL::Timer time;
@@ -595,15 +581,13 @@ int Scene::shape_detection()
 
   m_view_shapes = true;
 
-  std::cout << "(" << m_bbox.xmin() << ", " << m_bbox.ymin() << ", " << m_bbox.zmin() << ")" << std::endl;
-  std::cout << "(" << m_bbox.xmax() << ", " << m_bbox.ymax() << ", " << m_bbox.zmax() << ")" << std::endl;
+  std::cout << m_bbox << std::endl;
   if (!m_points.empty()) {
     m_bbox = m_points.begin()->first.bbox();
     for (auto &p : m_points)
       m_bbox = m_bbox + p.first.bbox();
-    std::cout << "(" << m_bbox.xmin() << ", " << m_bbox.ymin() << ", " << m_bbox.zmin() << ")" << std::endl;
-    std::cout << "(" << m_bbox.xmax() << ", " << m_bbox.ymax() << ", " << m_bbox.zmax() << ")" << std::endl;
   }
+  std::cout << m_bbox << std::endl;
 
   return EXIT_SUCCESS;
 }
