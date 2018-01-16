@@ -7,25 +7,27 @@
 class QWidget;
 class Scene;
 
-class Viewer : 
-    public QGLViewer
+class Viewer : public QGLViewer
 {
-
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    Viewer(QWidget * parent);
+  Viewer(QWidget *parent) : QGLViewer(parent), m_pScene(nullptr) {}
 
-    // overload several QGLViewer virtual functions
-    void draw();
-    void initializeGL();
-    void setScene(Scene* pScene);
+  // overload several QGLViewer virtual functions
+  void draw();
 
-    // customize help message
-    QString helpString() const;
+  void initializeGL();
+
+  void setScene(Scene *pScene) {
+    m_pScene = pScene;
+  }
+
+  // customize help message
+  QString helpString() const;
 
 private:
-    Scene* m_pScene;
+  Scene* m_pScene;
 }; // end class Viewer
 
 #endif // VIEWER_H

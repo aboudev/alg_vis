@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>PCA</string>
+   <string>Visualization</string>
   </property>
   <property name="windowIcon">
    <iconset resource="demo_playground.qrc">
