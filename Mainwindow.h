@@ -8,7 +8,6 @@
 class QDragEnterEvent;
 class QDropEvent;
 class Scene;
-class Viewer;
 
 class Mainwindow :
   public CGAL::Qt::DemosMainWindow,
@@ -17,16 +16,14 @@ class Mainwindow :
   Q_OBJECT
 
 public:
-  Mainwindow(QWidget* parent = 0);
-  ~Mainwindow() {}
+  Mainwindow(QWidget *parent = nullptr);
+  ~Mainwindow();
 
 public slots:
   void updateViewerBBox();
   void open(QString filename);
-  void setAddKeyFrameKeyboardModifiers(Qt::KeyboardModifiers);
 
 protected slots:
-
   // settings
   void quit();
   void readSettings();
@@ -55,15 +52,11 @@ protected slots:
   // view menu
   void on_actionView_polyhedron_triggered();
 
-private slots:
-  void popupAboutDemo();
-
 private:
   void connectActions();
 
 private:
-  Scene* m_pScene;
-  Viewer* m_pViewer;
+  Scene *scene;
 };
 
 #endif // ifndef MAINWINDOW_H
