@@ -156,180 +156,6 @@ void Scene::update_bbox()
     << " facets)" << std::endl;
 }
 
-void Scene::draw()
-{
-  if (m_view_polyhedron)
-    render_polyhedron();
-
-  render_line();
-  render_plane();
-  render_centroid();
-
-  if (m_view_shapes)
-    render_shape();
-}
-
-void Scene::render_plane()
-{
-  ::glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-  ::glLineWidth(3.0f);
-  ::glColor3ub(255,0,0);
-  ::glBegin(GL_QUADS);
-  Point o = m_plane.projection(m_centroid);
-  Point a = o + normalize(m_plane.base1()) + normalize(m_plane.base2());
-  Point b = o + normalize(m_plane.base1()) - normalize(m_plane.base2());
-  Point c = o - normalize(m_plane.base1()) - normalize(m_plane.base2());
-  Point d = o - normalize(m_plane.base1()) + normalize(m_plane.base2());
-  ::glVertex3d(a.x(),a.y(),a.z());
-  ::glVertex3d(b.x(),b.y(),b.z());
-  ::glVertex3d(c.x(),c.y(),c.z());
-  ::glVertex3d(d.x(),d.y(),d.z());
-  ::glEnd();
-}
-
-void Scene::render_line()
-{
-  ::glLineWidth(3.0f);
-  ::glColor3ub(0,0,255);
-  ::glBegin(GL_LINES);
-  Point o = m_line.projection(m_centroid);
-  Point a = o + normalize(m_line.to_vector());
-  Point b = o - normalize(m_line.to_vector());
-  ::glVertex3d(a.x(),a.y(),a.z());
-  ::glVertex3d(b.x(),b.y(),b.z());
-  ::glEnd();
-}
-
-void Scene::render_centroid()
-{
-  ::glPointSize(10.0f);
-  ::glColor3ub(0,128,0);
-  ::glBegin(GL_POINTS);
-  ::glVertex3d(m_centroid.x(),m_centroid.y(),m_centroid.z());
-  ::glEnd();
-}
-
-void Scene::render_shape()
-{
-  if (m_points.empty())
-    return;
-
-  Efficient_ransac::Shape_range shapes = m_bestshapes;
-  Efficient_ransac::Shape_range::iterator it = shapes.begin();
-
-  // shape color table
-  std::vector<int> color_tab;
-  for (int i = 0; it != shapes.end(); ++it, ++i) {
-    double R = ((double)i / double(shapes.size())) * (double)255.0;
-    int indiceLut = std::floor(R);
-    color_tab.push_back(indiceLut);
-  }
-  std::vector<int>::iterator color_itr = color_tab.begin();
-
-  std::set<std::size_t> pt_idx_set;
-  for (std::size_t i = 0; i < m_points.size(); ++i)
-    pt_idx_set.insert(i);
-
-  ::glDisable(GL_LIGHTING);
-
-  // draw point cloud with respect color
-  ::glPointSize(5.0);
-  it = shapes.begin();
-  while (it != shapes.end()) {
-    ::glColor3ub(Color_256::r(*color_itr), Color_256::g(*color_itr), Color_256::b(*color_itr));
-    ++color_itr;
-    ::glBegin(GL_POINTS);
-    // Iterates through point indices assigned to each detected shape.
-    std::vector<std::size_t>::const_iterator
-      index_it = (*it)->indices_of_assigned_points().begin();
-    while (index_it != (*it)->indices_of_assigned_points().end()) {
-      // Retrieves point
-      const Point_with_normal &p = *(m_points.begin() + (*index_it));
-      ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
-      pt_idx_set.erase(*index_it);
-      // Proceeds with next point.
-      index_it++;
-    }
-    // Proceeds with next detected shape.
-    it++;
-    ::glEnd();
-  }
-  // remaining points
-  std::cout << m_points.size() << " --- " << pt_idx_set.size() << std::endl;
-  ::glColor3f(0.0, 0.0, 0.0);
-  ::glBegin(GL_POINTS);
-  for (std::set<std::size_t>::iterator itr = pt_idx_set.begin();
-    itr != pt_idx_set.end(); ++itr)
-    ::glVertex3d(m_points[*itr].first.x(), m_points[*itr].first.y(), m_points[*itr].first.z());
-  ::glEnd();
-
-  //::glLineWidth(1.0);
-  //it = shapes.begin();
-  //color_itr = color_tab.begin();
-  //while (it != shapes.end()) {
-  //    ::glColor3ub(Color_256::r(*color_itr), Color_256::g(*color_itr), Color_256::b(*color_itr));
-  //    ++color_itr;
-  //    ::glBegin(GL_LINES);
-  //    // Iterates through point indices assigned to each detected shape.
-  //    std::vector<std::size_t>::const_iterator
-  //        index_it = (*it)->indices_of_assigned_points().begin();
-  //    while (index_it != (*it)->indices_of_assigned_points().end()) {
-  //        // Retrieves point
-  //        const Point_with_normal &p = *(m_points.begin() + (*index_it));
-  //        ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
-  //        ::glVertex3d(p.first.x() + p.second.x() * 0.05, p.first.y() + p.second.y() * 0.05, p.first.z() + p.second.z() * 0.05);
-  //        // Proceeds with next point.
-  //        index_it++;
-  //    }
-  //    // Proceeds with next detected shape.
-  //    it++;
-  //    ::glEnd();
-  //}
-
-  // bounding box to polyhedron
-  /*Epic_Polyhedron bxply = BboxToPolyhedron<Kernel2>(m_bbox);
-  CGAL::Polygon_mesh_slicer<Epic_Polyhedron, Kernel2> slicer(bxply);*/
-  // draw slicer plane
-  glLineWidth(3.0);
-  glColor3f(0.8f, 0.8f, 0.8f);
-  for (auto &s : shapes) {
-    CGAL::Bbox_3 bx = m_points[*(s->indices_of_assigned_points().begin())].first.bbox();
-    for (auto &p : s->indices_of_assigned_points())
-      bx += m_points[p].first.bbox();
-    Epic_Polyhedron bxply = BboxToPolyhedron<Kernel2>(bx);
-    CGAL::Polygon_mesh_slicer<Epic_Polyhedron, Kernel2> slicer(bxply);
-
-    Kernel2::Plane_3 p = PlaneFromShapeInfo(*s);
-    Polylines pls;
-    slicer(p, std::back_inserter(pls));
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBegin(GL_POLYGON);
-    //glBegin(GL_LINE_LOOP);
-    for (auto &pl : pls)
-      for (auto &p : pl)
-        glVertex3d(p.x(), p.y(), p.z());
-    glEnd();
-  }
-
-  ::glEnable(GL_LIGHTING);
-}
-
-void Scene::toggle_view_poyhedron()
-{
-  m_view_polyhedron = !m_view_polyhedron;
-}
-
-void Scene::render_polyhedron()
-{
-  // draw black edges
-  if (m_pPolyhedron != nullptr) {
-    ::glDisable(GL_LIGHTING);
-    ::glColor3ub(0, 0, 0);
-    ::glLineWidth(1.0f);
-    gl_render_edges(*m_pPolyhedron);
-  }
-}
-
 Vector Scene::normalize(const Vector& v)
 {
   return v / std::sqrt(v*v);
@@ -774,3 +600,173 @@ int Scene::surface_simplification(QString filename)
 /************************************************************************/
 // Modified to run on surface mesh while keeping the topology
 // Refer to https://github.com/bldeng/GuidedDenoising
+
+
+void Scene::draw()
+{
+  if (m_view_polyhedron)
+    render_polyhedron();
+
+  render_line();
+  render_plane();
+  render_centroid();
+
+  if (m_view_shapes)
+    render_shape();
+}
+
+void Scene::render_plane()
+{
+  ::glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+  ::glLineWidth(3.0f);
+  ::glColor3ub(255,0,0);
+  ::glBegin(GL_QUADS);
+  Point o = m_plane.projection(m_centroid);
+  Point a = o + normalize(m_plane.base1()) + normalize(m_plane.base2());
+  Point b = o + normalize(m_plane.base1()) - normalize(m_plane.base2());
+  Point c = o - normalize(m_plane.base1()) - normalize(m_plane.base2());
+  Point d = o - normalize(m_plane.base1()) + normalize(m_plane.base2());
+  ::glVertex3d(a.x(),a.y(),a.z());
+  ::glVertex3d(b.x(),b.y(),b.z());
+  ::glVertex3d(c.x(),c.y(),c.z());
+  ::glVertex3d(d.x(),d.y(),d.z());
+  ::glEnd();
+}
+
+void Scene::render_line()
+{
+  ::glLineWidth(3.0f);
+  ::glColor3ub(0,0,255);
+  ::glBegin(GL_LINES);
+  Point o = m_line.projection(m_centroid);
+  Point a = o + normalize(m_line.to_vector());
+  Point b = o - normalize(m_line.to_vector());
+  ::glVertex3d(a.x(),a.y(),a.z());
+  ::glVertex3d(b.x(),b.y(),b.z());
+  ::glEnd();
+}
+
+void Scene::render_centroid()
+{
+  ::glPointSize(10.0f);
+  ::glColor3ub(0,128,0);
+  ::glBegin(GL_POINTS);
+  ::glVertex3d(m_centroid.x(),m_centroid.y(),m_centroid.z());
+  ::glEnd();
+}
+
+void Scene::render_shape()
+{
+  if (m_points.empty())
+    return;
+
+  Efficient_ransac::Shape_range shapes = m_bestshapes;
+  Efficient_ransac::Shape_range::iterator it = shapes.begin();
+
+  // shape color table
+  std::vector<int> color_tab;
+  for (int i = 0; it != shapes.end(); ++it, ++i) {
+    double R = ((double)i / double(shapes.size())) * (double)255.0;
+    int indiceLut = std::floor(R);
+    color_tab.push_back(indiceLut);
+  }
+  std::vector<int>::iterator color_itr = color_tab.begin();
+
+  std::set<std::size_t> pt_idx_set;
+  for (std::size_t i = 0; i < m_points.size(); ++i)
+    pt_idx_set.insert(i);
+
+  ::glDisable(GL_LIGHTING);
+
+  // draw point cloud with respect color
+  ::glPointSize(5.0);
+  it = shapes.begin();
+  while (it != shapes.end()) {
+    ::glColor3ub(Color_256::r(*color_itr), Color_256::g(*color_itr), Color_256::b(*color_itr));
+    ++color_itr;
+    ::glBegin(GL_POINTS);
+    // Iterates through point indices assigned to each detected shape.
+    std::vector<std::size_t>::const_iterator
+      index_it = (*it)->indices_of_assigned_points().begin();
+    while (index_it != (*it)->indices_of_assigned_points().end()) {
+      // Retrieves point
+      const Point_with_normal &p = *(m_points.begin() + (*index_it));
+      ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
+      pt_idx_set.erase(*index_it);
+      // Proceeds with next point.
+      index_it++;
+    }
+    // Proceeds with next detected shape.
+    it++;
+    ::glEnd();
+  }
+  // remaining points
+  std::cout << m_points.size() << " --- " << pt_idx_set.size() << std::endl;
+  ::glColor3f(0.0, 0.0, 0.0);
+  ::glBegin(GL_POINTS);
+  for (std::set<std::size_t>::iterator itr = pt_idx_set.begin();
+    itr != pt_idx_set.end(); ++itr)
+    ::glVertex3d(m_points[*itr].first.x(), m_points[*itr].first.y(), m_points[*itr].first.z());
+  ::glEnd();
+
+  //::glLineWidth(1.0);
+  //it = shapes.begin();
+  //color_itr = color_tab.begin();
+  //while (it != shapes.end()) {
+  //    ::glColor3ub(Color_256::r(*color_itr), Color_256::g(*color_itr), Color_256::b(*color_itr));
+  //    ++color_itr;
+  //    ::glBegin(GL_LINES);
+  //    // Iterates through point indices assigned to each detected shape.
+  //    std::vector<std::size_t>::const_iterator
+  //        index_it = (*it)->indices_of_assigned_points().begin();
+  //    while (index_it != (*it)->indices_of_assigned_points().end()) {
+  //        // Retrieves point
+  //        const Point_with_normal &p = *(m_points.begin() + (*index_it));
+  //        ::glVertex3d(p.first.x(), p.first.y(), p.first.z());
+  //        ::glVertex3d(p.first.x() + p.second.x() * 0.05, p.first.y() + p.second.y() * 0.05, p.first.z() + p.second.z() * 0.05);
+  //        // Proceeds with next point.
+  //        index_it++;
+  //    }
+  //    // Proceeds with next detected shape.
+  //    it++;
+  //    ::glEnd();
+  //}
+
+  // bounding box to polyhedron
+  /*Epic_Polyhedron bxply = BboxToPolyhedron<Kernel2>(m_bbox);
+  CGAL::Polygon_mesh_slicer<Epic_Polyhedron, Kernel2> slicer(bxply);*/
+  // draw slicer plane
+  glLineWidth(3.0);
+  glColor3f(0.8f, 0.8f, 0.8f);
+  for (auto &s : shapes) {
+    CGAL::Bbox_3 bx = m_points[*(s->indices_of_assigned_points().begin())].first.bbox();
+    for (auto &p : s->indices_of_assigned_points())
+      bx += m_points[p].first.bbox();
+    Epic_Polyhedron bxply = BboxToPolyhedron<Kernel2>(bx);
+    CGAL::Polygon_mesh_slicer<Epic_Polyhedron, Kernel2> slicer(bxply);
+
+    Kernel2::Plane_3 p = PlaneFromShapeInfo(*s);
+    Polylines pls;
+    slicer(p, std::back_inserter(pls));
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBegin(GL_POLYGON);
+    //glBegin(GL_LINE_LOOP);
+    for (auto &pl : pls)
+      for (auto &p : pl)
+        glVertex3d(p.x(), p.y(), p.z());
+    glEnd();
+  }
+
+  ::glEnable(GL_LIGHTING);
+}
+
+void Scene::render_polyhedron()
+{
+  // draw black edges
+  if (m_pPolyhedron != nullptr) {
+    ::glDisable(GL_LIGHTING);
+    ::glColor3ub(0, 0, 0);
+    ::glLineWidth(1.0f);
+    gl_render_edges(*m_pPolyhedron);
+  }
+}

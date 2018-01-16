@@ -1,5 +1,5 @@
-#ifndef PCA_DEMO_TYPES_H
-#define PCA_DEMO_TYPES_H
+#ifndef ALG_VIS_TYPES_H
+#define ALG_VIS_TYPES_H
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
@@ -14,6 +14,7 @@ typedef Kernel::Vector_3 Vector;
 typedef Kernel::Segment_3 Segment;
 typedef Kernel::Triangle_3 Triangle;
 typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
+typedef CGAL::Bbox_3 Bbox;
 
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -46,4 +47,4 @@ typedef Surface_mesh::Vertex_handle SmVertex_handle;
 namespace SMS = CGAL::Surface_mesh_simplification;
 typedef SMS::Edge_profile<Surface_mesh> SmProfile;
 
-#endif // PCA_DEMO_TYPES_H
+#endif // ALG_VIS_TYPES_H

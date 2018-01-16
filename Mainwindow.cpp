@@ -48,7 +48,7 @@ Mainwindow::~Mainwindow()
 void Mainwindow::updateViewerBBox()
 {
   scene->update_bbox();
-  const Scene::Bbox bbox = scene->bbox();
+  const Bbox bbox = scene->bbox();
   const qglviewer::Vec vec_min(
     bbox.xmin(), bbox.ymin(), bbox.zmin());
   const qglviewer::Vec vec_max(
@@ -165,11 +165,15 @@ void Mainwindow::on_actionFit_vertices_triggered()
 
 void Mainwindow::on_actionShape_detection_triggered()
 {
+  QSettings settings;
   const QString fileName = QFileDialog::getOpenFileName(
     this,
     tr("Open point with normal"),
-    ".",
+    settings.value("shape_detection_open_directory", ".").toString(),
     tr("Point Cloud File (*.pwn)"));
+  if (fileName.isEmpty())
+    return;
+  settings.setValue("shape_detection_open_directory", fileName);
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
 

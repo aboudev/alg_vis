@@ -24,39 +24,26 @@ class Scene
 public:
   Scene();
   ~Scene();
-public:
-  // types
-  typedef CGAL::Bbox_3 Bbox;
-
-public:
-  void update_bbox();
-  Bbox bbox() { return m_bbox; }
-
-private:
-  // member data
-  Bbox m_bbox;
-  Line m_line;
-  Plane m_plane;
-  Point m_centroid;
-  Polyhedron *m_pPolyhedron;
-
-  // view options
-  bool m_view_polyhedron;
 
 public:
   // file menu
   int open(QString filename);
 
+  void update_bbox();
+  Bbox bbox() { return m_bbox; }
+
   // toggle view options
-  void toggle_view_poyhedron();
+  void toggle_view_poyhedron() {
+    m_view_polyhedron = !m_view_polyhedron;
+  }
 
   // algorithms
   Vector normalize(const Vector& v);
 
   void refine_loop();
+  void fit_triangles();
   void fit_edges();
   void fit_vertices();
-  void fit_triangles();
 
   // RANSAC shape detection on point cloud algorithm
   int shape_detection(const std::string &fname);
@@ -75,6 +62,16 @@ public:
   void render_shape();
 
 private:
+  // member data
+  Bbox m_bbox;
+  Line m_line;
+  Plane m_plane;
+  Point m_centroid;
+  Polyhedron *m_pPolyhedron;
+
+  // view options
+  bool m_view_polyhedron;
+
   // Points with normals.
   Pwn_vector m_points;
 
