@@ -28,6 +28,9 @@ Mainwindow::Mainwindow(QWidget *parent) :
   // accepts drop events
   setAcceptDrops(true);
 
+  // add recent files actions before action quit
+  addRecentFiles(menuFile, actionQuit);
+
   // connect actions
   connectActions();
 
@@ -70,12 +73,6 @@ void Mainwindow::open(QString filename)
   }
 }
 
-void Mainwindow::quit()
-{
-  writeSettings();
-  close();
-}
-
 void Mainwindow::readSettings()
 {
   this->readState("Mainwindow", Size|State);
@@ -87,28 +84,16 @@ void Mainwindow::writeSettings()
   std::cerr << "Write setting... done.\n";
 }
 
-void Mainwindow::dropEvent(QDropEvent *event)
+void Mainwindow::quit()
 {
-  Q_FOREACH(QUrl url, event->mimeData()->urls()) {
-    QString filename = url.toLocalFile();
-    if (!filename.isEmpty()) {
-      QTextStream(stderr) << QString("dropEvent(\"%1\")\n").arg(filename);
-      open(filename);
-    }
-  }
-  event->acceptProposedAction();
+  writeSettings();
+  close();
 }
 
 void Mainwindow::closeEvent(QCloseEvent *event)
 {
   writeSettings();
   event->accept();
-}
-
-void Mainwindow::dragEnterEvent(QDragEnterEvent *event)
-{
-  if (event->mimeData()->hasFormat("text/uri-list"))
-    event->acceptProposedAction();
 }
 
 void Mainwindow::on_actionLoadPolyhedron_triggered()

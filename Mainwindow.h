@@ -25,14 +25,12 @@ public slots:
 
 protected slots:
   // settings
-  void quit();
   void readSettings();
   void writeSettings();
 
-  // drag & drop
-  void dropEvent(QDropEvent *event);
+  // quit & close
+  void quit();
   void closeEvent(QCloseEvent *event);
-  void dragEnterEvent(QDragEnterEvent *event);
 
   // file menu
   void on_actionLoadPolyhedron_triggered();

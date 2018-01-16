@@ -92,7 +92,7 @@ Scene::Scene() :
 {
   std::cerr << "before constructor " << std::endl;
 
-  m_pPolyhedron = NULL;
+  m_pPolyhedron = nullptr;
 
   // view options
   m_view_polyhedron = true;
@@ -113,26 +113,24 @@ int Scene::open(QString filename)
   QFileInfo fileinfo(filename);
   std::ifstream in(filename.toUtf8());
 
-  if(!in || !fileinfo.isFile() || ! fileinfo.isReadable())
-  {
+  if (!in || !fileinfo.isFile() || ! fileinfo.isReadable()) {
     std::cerr << "unable to open file" << std::endl;
     QApplication::restoreOverrideCursor();
     return -1;
   }
 
-  if(m_pPolyhedron != NULL)
+  if (m_pPolyhedron != nullptr)
     delete m_pPolyhedron;
 
   // allocate new polyhedron
   m_pPolyhedron = new Polyhedron;
   in >> *m_pPolyhedron;
-  if(!in)
-  {
+  if (!in) {
     std::cerr << "invalid OFF file" << std::endl;
     QApplication::restoreOverrideCursor();
 
     delete m_pPolyhedron;
-    m_pPolyhedron = NULL;
+    m_pPolyhedron = nullptr;
 
     return -1;
   }
@@ -143,8 +141,8 @@ int Scene::open(QString filename)
 
 void Scene::update_bbox()
 {
-  if(m_pPolyhedron == nullptr
-    || m_pPolyhedron->empty()) {
+  std::cerr << "update bbox" << std::endl;
+  if (m_pPolyhedron == nullptr || m_pPolyhedron->empty()) {
     std::cout << "(no / empty polyhedron)." << std::endl;
     return;
   }
@@ -152,7 +150,7 @@ void Scene::update_bbox()
   std::cout << "Compute bbox...";
   Polyhedron::Point_iterator it = m_pPolyhedron->points_begin();
   m_bbox = (*it).bbox();
-  for(; it != m_pPolyhedron->points_end();it++)
+  for (; it != m_pPolyhedron->points_end();it++)
     m_bbox = m_bbox + (*it).bbox();
   std::cout << "done (" << m_pPolyhedron->size_of_facets()
     << " facets)" << std::endl;
@@ -160,7 +158,7 @@ void Scene::update_bbox()
 
 void Scene::draw()
 {
-  if(m_view_polyhedron)
+  if (m_view_polyhedron)
     render_polyhedron();
 
   render_line();
@@ -324,8 +322,7 @@ void Scene::toggle_view_poyhedron()
 void Scene::render_polyhedron()
 {
   // draw black edges
-  if (m_pPolyhedron != NULL)
-  {
+  if (m_pPolyhedron != nullptr) {
     ::glDisable(GL_LIGHTING);
     ::glColor3ub(0, 0, 0);
     ::glLineWidth(1.0f);
@@ -344,8 +341,7 @@ Vector Scene::normalize(const Vector& v)
 /************************************************************************/
 void Scene::refine_loop()
 {
-  if(m_pPolyhedron == NULL)
-  {
+  if (m_pPolyhedron == nullptr) {
     std::cout << "Load polyhedron first." << std::endl;
     return;
   }
@@ -356,7 +352,7 @@ void Scene::refine_loop()
 
 void Scene::fit_triangles()
 {
-  if (m_pPolyhedron == NULL) {
+  if (m_pPolyhedron == nullptr) {
     std::cout << "Load polyhedron first." << std::endl;
     return;
   }
@@ -364,10 +360,7 @@ void Scene::fit_triangles()
   std::cout << "Fit triangles...";
 
   std::list<Triangle> triangles;
-  Polyhedron::Facet_iterator it;
-  for(it = m_pPolyhedron->facets_begin();
-    it != m_pPolyhedron->facets_end();
-    it++) {
+  for (auto it = m_pPolyhedron->facets_begin(); it != m_pPolyhedron->facets_end(); ++it) {
     Polyhedron::Halfedge_handle he = it->halfedge();
     const Point& a = he->vertex()->point();
     const Point& b = he->next()->vertex()->point();
@@ -387,7 +380,7 @@ void Scene::fit_triangles()
 
 void Scene::fit_edges()
 {
-  if (m_pPolyhedron == NULL) {
+  if (m_pPolyhedron == nullptr) {
     std::cout << "Load polyhedron first." << std::endl;
     return;
   }
@@ -396,7 +389,7 @@ void Scene::fit_edges()
 
   std::list<Segment> segments;
   Polyhedron::Edge_iterator he;
-  for(he = m_pPolyhedron->edges_begin();
+  for (he = m_pPolyhedron->edges_begin();
     he != m_pPolyhedron->edges_end();
     he++) {
     const Point& a = he->vertex()->point();
@@ -416,7 +409,7 @@ void Scene::fit_edges()
 
 void Scene::fit_vertices()
 {
-  if (m_pPolyhedron == NULL) {
+  if (m_pPolyhedron == nullptr) {
     std::cout << "Load polyhedron first." << std::endl;
     return;
   }
@@ -425,7 +418,7 @@ void Scene::fit_vertices()
 
   std::list<Point> points;
   Polyhedron::Vertex_iterator v;
-  for(v = m_pPolyhedron->vertices_begin();
+  for (v = m_pPolyhedron->vertices_begin();
     v != m_pPolyhedron->vertices_end();
     v++) {
     const Point& p = v->point();
@@ -580,7 +573,7 @@ int Scene::shape_detection(const std::string &fname)
 /************************************************************************/
 //int Scene::surface_simplification()
 //{
-//    if (m_pPolyhedron == NULL) {
+//    if (m_pPolyhedron == nullptr) {
 //        std::cout << "Load polyhedron first." << std::endl;
 //        return EXIT_FAILURE;
 //    }
@@ -767,7 +760,7 @@ int Scene::surface_simplification(QString filename)
   std::ofstream os("out.off"); os << surface_mesh;
   // load out.off to m_pPolyhedron for visualization
   std::ifstream is("out.off");
-  if (m_pPolyhedron != NULL)
+  if (m_pPolyhedron != nullptr)
     delete m_pPolyhedron;
   m_pPolyhedron = new Polyhedron;
   is >> *m_pPolyhedron;
