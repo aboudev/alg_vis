@@ -83,7 +83,7 @@ int Scene::surface_simplification(const std::string &fname)
   m_surface_simplification->simplify(fname);
 
   // update viewing bbox
-  m_bbox = m_surface_simplification->bbox();
+  // m_bbox = m_surface_simplification->bbox();
   // m_view_polyhedron = false;
 
   return 0;

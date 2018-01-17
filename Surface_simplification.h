@@ -111,7 +111,7 @@ class Surface_simplification {
   };
 
 public:
-  Surface_simplification() {}
+  Surface_simplification() : m_pPolyhedron(nullptr) {}
 
   const Bbox &bbox() { return m_bbox; }
 

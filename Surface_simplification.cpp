@@ -123,13 +123,19 @@ int Surface_simplification::simplify(const std::string &filename)
   std::cout << "\nFinished...\n" << r << " edges removed.\n"
     << (surface_mesh.size_of_halfedges() / 2) << " final edges.\n";
 
-  std::ofstream os("out.off"); os << surface_mesh;
-  // load out.off to m_pPolyhedron for visualization
-  std::ifstream is("out.off");
+  std::ofstream os("out.off");
+  os << surface_mesh;
+  os.flush();
+  os.close();
+
   if (m_pPolyhedron != nullptr)
     delete m_pPolyhedron;
   m_pPolyhedron = new Polyhedron;
+
+  // load out.off to m_pPolyhedron for visualization
+  std::ifstream is("out.off");
   is >> *m_pPolyhedron;
+  is.close();
 
   return EXIT_SUCCESS;
 }

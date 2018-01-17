@@ -171,8 +171,8 @@ void Mainwindow::on_actionSurface_simplification_triggered()
 
   scene->surface_simplification(filename.toStdString());
 
-  updateViewerBBox();
-  viewer->update();
+  // updateViewerBBox();
+  // viewer->update();
   QApplication::restoreOverrideCursor();
 }
 
