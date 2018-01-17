@@ -47,11 +47,14 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
 
   # cpp files
   add_executable(${PRJ_NAME}
-    ${PRJ_NAME}.cpp
-    Mainwindow.cpp Viewer.cpp
-    Settings_dialog.cpp
-    Scene.cpp
     Color_256.cpp
+    Shape_detection.cpp
+    Surface_simplification.cpp
+    Scene.cpp
+    Viewer.cpp
+    Settings_dialog.cpp
+    Mainwindow.cpp
+    ${PRJ_NAME}.cpp
     ${UI_FILES} ${CGAL_Qt5_RESOURCE_FILES} ${CGAL_Qt5_MOC_FILES})
 
   qt5_use_modules(${PRJ_NAME} Xml Script OpenGL)

@@ -9,6 +9,11 @@
 #include <iostream>
 #include <fstream>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <gl/gl.h>
+
 #include <CGAL/IO/read_xyz_points.h>
 #include <CGAL/Point_with_normal_3.h>
 #include <CGAL/property_map.h>
@@ -179,7 +184,7 @@ void Shape_detection::draw() {
   std::vector<int> color_tab;
   for (int i = 0; it != shapes.end(); ++it, ++i) {
     double R = ((double)i / double(shapes.size())) * (double)255.0;
-    int indiceLut = std::floor(R);
+    int indiceLut = static_cast<int>(std::floor(R));
     color_tab.push_back(indiceLut);
   }
   std::vector<int>::iterator color_itr = color_tab.begin();
@@ -272,7 +277,7 @@ void Shape_detection::draw() {
   ::glEnable(GL_LIGHTING);
 }
 
-Kernel2::Plane_3 shape_info_to_plane(const Efficient_ransac::Shape &s)
+Kernel2::Plane_3 Shape_detection::shape_info_to_plane(const Efficient_ransac::Shape &s)
 {
   std::stringstream sstm(s.info());
   std::string str;
@@ -292,4 +297,4 @@ Kernel2::Plane_3 shape_info_to_plane(const Efficient_ransac::Shape &s)
   return Kernel2::Plane_3(a, b, c, d);
 }
 
-}
+} // Algs

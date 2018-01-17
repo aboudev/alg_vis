@@ -4,7 +4,7 @@
 // RVG, NLPR, CASIA
 ////////////////////////////////////////////////////
 
-#ifdef SURFACE_SIMPLIFICATION_H
+#ifndef SURFACE_SIMPLIFICATION_H
 #define SURFACE_SIMPLIFICATION_H
 
 #include "types.h"
@@ -115,9 +115,9 @@ public:
 
   const Bbox &bbox() { return m_bbox; }
 
-  void simplify();
+  int simplify();
 
-  void simplify(const std::string &filename);
+  int simplify(const std::string &filename);
 
 private:
   Bbox m_bbox;

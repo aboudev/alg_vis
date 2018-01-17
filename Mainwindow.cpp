@@ -42,12 +42,12 @@ Mainwindow::Mainwindow(QWidget *parent) :
 
 Mainwindow::~Mainwindow()
 {
-  delete scene;
+  if (scene)
+    delete scene;
 }
 
 void Mainwindow::updateViewerBBox()
 {
-  scene->update_bbox();
   const Bbox bbox = scene->bbox();
   const qglviewer::Vec vec_min(
     bbox.xmin(), bbox.ymin(), bbox.zmin());
@@ -59,9 +59,11 @@ void Mainwindow::updateViewerBBox()
 
 void Mainwindow::open(QString filename)
 {
+  QApplication::setOverrideCursor(QCursor(::Qt::WaitCursor));
+
   QFileInfo fileinfo(filename);
   if (fileinfo.isFile() && fileinfo.isReadable()) {
-    if (scene->open(filename) >= 0) {
+    if (scene->open(filename.toStdString()) >= 0) {
       QSettings settings;
       settings.setValue("OFF open directory", fileinfo.absoluteDir().absolutePath());
       addToRecentFiles(filename);
@@ -71,6 +73,8 @@ void Mainwindow::open(QString filename)
       viewer->update();
     }
   }
+
+  QApplication::restoreOverrideCursor();
 }
 
 void Mainwindow::readSettings()
@@ -99,18 +103,16 @@ void Mainwindow::closeEvent(QCloseEvent *event)
 void Mainwindow::on_actionLoadPolyhedron_triggered()
 {
   QSettings settings;
-  QString directory = settings.value("OFF open directory", QDir::current().dirName()).toString();
-  QStringList filenames = QFileDialog::getOpenFileNames(
+  const QString filename = QFileDialog::getOpenFileName(
     this,
     tr("Load polyhedron..."),
-    directory,
-    tr("OFF files (*.off)\n"
-    "All files (*)"));
-  if (!filenames.isEmpty()) {
-    Q_FOREACH(QString filename, filenames) {
-      open(filename);
-    }
-  }
+    settings.value("off_open_directory", ".").toString(),
+    tr("OFF files (*.off)\nAll files (*)"));
+  if (!filename.isEmpty())
+    return;
+  settings.setValue("off_open_directory", filename);
+
+  open(filename);
 }
 
 void Mainwindow::on_actionSave_snapshot_triggered()
@@ -135,18 +137,18 @@ void Mainwindow::on_actionCopy_snapshot_triggered()
 void Mainwindow::on_actionShape_detection_triggered()
 {
   QSettings settings;
-  const QString fileName = QFileDialog::getOpenFileName(
+  const QString filename = QFileDialog::getOpenFileName(
     this,
     tr("Open point with normal"),
     settings.value("shape_detection_open_directory", ".").toString(),
     tr("Point Cloud File (*.pwn)"));
-  if (fileName.isEmpty())
+  if (filename.isEmpty())
     return;
-  settings.setValue("shape_detection_open_directory", fileName);
+  settings.setValue("shape_detection_open_directory", filename);
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
 
-  scene->shape_detection(fileName.toStdString());
+  scene->shape_detection(filename.toStdString());
 
   updateViewerBBox();
   viewer->update();
@@ -156,19 +158,19 @@ void Mainwindow::on_actionShape_detection_triggered()
 void Mainwindow::on_actionSurface_simplification_triggered()
 {
   QSettings settings;
-  QString directory = settings.value("OFF open directory", QDir::current().dirName()).toString();
-  QStringList filenames = QFileDialog::getOpenFileNames(
+  const QString filename = QFileDialog::getOpenFileName(
     this,
     tr("Load surface mesh..."),
-    directory,
+    settings.value("surface_simplification_open_directory", ".").toString(),
     tr("OFF files (*.off)"));
-
-  QString filename;
-  if (!filenames.isEmpty())
-    filename = *(filenames.begin());
+  if (filename.isEmpty())
+    return;
+  settings.setValue("surface_simplification_open_directory", filename);
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  scene->surface_simplification(filename);
+
+  scene->surface_simplification(filename.toStdString());
+
   updateViewerBBox();
   viewer->update();
   QApplication::restoreOverrideCursor();

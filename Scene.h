@@ -1,28 +1,25 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <QtOpenGL/qgl.h>
-#include <iostream>
-#include <cmath>
-
 #include "types.h"
+
+namespace Algs {
+  class Shape_detection;
+  class Surface_simplification;
+}
 
 class Scene
 {
 public:
-  Scene() : m_pPolyhedron(nullptr), m_view_polyhedron(false) {}
+  Scene();
 
-  ~Scene() {
-    if (m_pPolyhedron)
-      delete m_pPolyhedron;
-  }
+  ~Scene();
 
 public:
   // file menu
-  int open(QString filename);
+  int open(const std::string &fname);
 
-  void update_bbox();
-  Bbox bbox() { return m_bbox; }
+  const Bbox &bbox() { return m_bbox; }
 
   // toggle view options
   void toggle_view_poyhedron() {
@@ -35,7 +32,7 @@ public:
 
   // triangulated surface mesh simplification algorithm
   //int surface_simplification();
-  int surface_simplification(QString filename);
+  int surface_simplification(const std::string &fname);
 
   // rendering
   void draw(); 
@@ -48,6 +45,10 @@ private:
 
   // view options
   bool m_view_polyhedron;
+
+  // algorithms
+  Algs::Shape_detection *m_shape_detection;
+  Algs::Surface_simplification *m_surface_simplification;
 }; // end class Scene
 
 

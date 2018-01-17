@@ -3,6 +3,8 @@
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
+#include <CGAL/Bbox_3.h>
+
 #include <boost/iterator/transform_iterator.hpp> 
 
 typedef CGAL::Simple_cartesian<double> Kernel;

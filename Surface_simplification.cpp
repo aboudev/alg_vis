@@ -6,64 +6,65 @@
 
 #include "Surface_simplification.h"
 
+#include <iostream>
+#include <fstream>
+
 namespace Algs {
 
 int Surface_simplification::simplify()
 {
-   if (m_pPolyhedron == nullptr) {
-       std::cout << "Load polyhedron first." << std::endl;
-       return EXIT_FAILURE;
-   }
+  if (m_pPolyhedron == nullptr) {
+    std::cout << "Load polyhedron first." << std::endl;
+    return EXIT_FAILURE;
+  }
 
-   std::cout << "\nStarting surface simplification...\n" 
-       << m_pPolyhedron->size_of_halfedges() / 2
-       << " original undirected edges." << std::endl;
+  std::cout << "\nStarting surface simplification...\n" 
+    << m_pPolyhedron->size_of_halfedges() / 2
+    << " original undirected edges." << std::endl;
 
-   // This is a stop predicate (defines when the algorithm terminates).
-   // In this example, the simplification stops when the number of undirected edges
-   // left in the surface mesh drops below the specified number (1000)
-   SMS::Count_stop_predicate<Polyhedron> stop(14000);
+  // This is a stop predicate (defines when the algorithm terminates).
+  // In this example, the simplification stops when the number of undirected edges
+  // left in the surface mesh drops below the specified number (1000)
+  SMS::Count_stop_predicate<Polyhedron> stop(14000);
 
-   // This the actual call to the simplification algorithm.
-   // The surface mesh and stop conditions are mandatory arguments.
-   // The index maps are needed because the vertices and edges
-   // of this surface mesh lack an "id()" field.
-   int r = SMS::edge_collapse
-   (*m_pPolyhedron
-       , stop
-       , CGAL::parameters::vertex_index_map(get(CGAL::vertex_external_index, *m_pPolyhedron))
-       .halfedge_index_map(get(CGAL::halfedge_external_index, *m_pPolyhedron))
-       .get_cost(SMS::Edge_length_cost<Polyhedron>())
-       .get_placement(SMS::Midpoint_placement<Polyhedron>())
-   );
+  // This the actual call to the simplification algorithm.
+  // The surface mesh and stop conditions are mandatory arguments.
+  // The index maps are needed because the vertices and edges
+  // of this surface mesh lack an "id()" field.
+  int r = SMS::edge_collapse
+  (*m_pPolyhedron
+    , stop
+    , CGAL::parameters::vertex_index_map(get(CGAL::vertex_external_index, *m_pPolyhedron))
+    .halfedge_index_map(get(CGAL::halfedge_external_index, *m_pPolyhedron))
+    .get_cost(SMS::Edge_length_cost<Polyhedron>())
+    .get_placement(SMS::Midpoint_placement<Polyhedron>())
+  );
 
-   std::cout << "\nFinished...\n" << r << " edges removed.\n"
-       << ((*m_pPolyhedron).size_of_halfedges() / 2) << " final edges.\n";
+  std::cout << "\nFinished...\n" << r << " edges removed.\n"
+    << ((*m_pPolyhedron).size_of_halfedges() / 2) << " final edges.\n";
 
-   std::ofstream os("out.off");
-   os << (*m_pPolyhedron);
+  std::ofstream os("out.off");
+  os << (*m_pPolyhedron);
 
-   return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 
 // The following is a Visitor that keeps track of the simplification process.
 // In this example the progress is printed real-time and a few statistics are
 // recorded (and printed in the end).
 
-int Surface_simplification::simplify(QString filename)
+int Surface_simplification::simplify(const std::string &filename)
 {
-  std::cout << "Opening file \"" 
-    << filename.toStdString() 
-    << "\"" << std::endl;
-  QFileInfo fileinfo(filename);
-  std::ifstream in(filename.toUtf8());
-  if (!in || !fileinfo.isFile() || !fileinfo.isReadable()) {
+  std::cout << "Opening file \"" << filename << "\"" << std::endl;
+  std::ifstream ifs(filename);
+  if (!ifs.is_open()) {
     std::cerr << "unable to open file" << std::endl;
     return EXIT_FAILURE;
   }
+
   Surface_mesh surface_mesh;
-  in >> surface_mesh;
-  if (!in) {
+  ifs >> surface_mesh;
+  if (!ifs) {
     std::cerr << "invalid OFF file" << std::endl;
     return EXIT_FAILURE;
   }
@@ -133,5 +134,4 @@ int Surface_simplification::simplify(QString filename)
   return EXIT_SUCCESS;
 }
 
-
-}
+} // Algs
