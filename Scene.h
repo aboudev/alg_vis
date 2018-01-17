@@ -28,7 +28,7 @@ public:
 
   // algorithms
   // RANSAC shape detection on point cloud algorithm
-  int shape_detection(const std::string &fname);
+  int shape_detection(const std::string &fname, const Params::Shape_detection &params);
 
   // triangulated surface mesh simplification algorithm
   //int surface_simplification();

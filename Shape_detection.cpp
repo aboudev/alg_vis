@@ -44,7 +44,7 @@ Shape_detection::Shape_detection() :
   // no default constructor for shape_range, although invalid
   m_bestshapes(m_ransac.shapes()) {}
 
-void Shape_detection::detect(const std::string &fname)
+void Shape_detection::detect(const std::string &fname, const Params::Shape_detection &params)
 {
   std::cout << "Shape detection...";
 
@@ -61,6 +61,19 @@ void Shape_detection::detect(const std::string &fname)
     std::cerr << "Error: cannot read file cube.pwn" << std::endl;
     return;
   }
+
+  Efficient_ransac::Parameters parameters;
+  // Sets probability to miss the largest primitive at each iteration.
+  parameters.probability = params.probability;
+  // Detect shapes with at least 500 points.
+  parameters.min_points = params.min_points;
+  // Sets maximum Euclidean distance between a point and a shape.
+  parameters.epsilon = params.epsilon;
+  // Sets maximum Euclidean distance between points to be clustered.
+  parameters.cluster_epsilon = params.cluster_epsilon;
+  // Sets maximum normal deviation.
+  // 0.9 < dot(surface_normal, point_normal); 
+  parameters.normal_threshold = params.normal_threshold;
 
   // Instantiates shape detection engine.
   // Provides the input data.
@@ -88,7 +101,7 @@ void Shape_detection::detect(const std::string &fname)
     time.reset();
     time.start();
     // Detects shapes.
-    m_ransac.detect();
+    m_ransac.detect(parameters);
     // Measures time after detection.
     time.stop();
     // Compute coverage, i.e. ratio of the points assigned to a shape.

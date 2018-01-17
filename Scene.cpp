@@ -59,13 +59,13 @@ int Scene::open(const std::string &fname)
   return 0;
 }
 
-int Scene::shape_detection(const std::string &fname)
+int Scene::shape_detection(const std::string &fname, const Params::Shape_detection &params)
 {
   if (m_shape_detection)
     delete m_shape_detection;
 
   m_shape_detection = new Algs::Shape_detection();
-  m_shape_detection->detect(fname);
+  m_shape_detection->detect(fname, params);
 
   // update viewing bbox
   m_bbox = m_shape_detection->bbox();

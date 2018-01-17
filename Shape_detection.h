@@ -47,7 +47,7 @@ public:
 
   const Bbox & bbox() { return m_bbox; }
 
-  void detect(const std::string &fname);
+  void detect(const std::string &fname, const Params::Shape_detection &params);
 
   void draw();
 

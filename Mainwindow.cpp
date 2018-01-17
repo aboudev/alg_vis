@@ -1,17 +1,10 @@
 #include "Mainwindow.h"
 #include "Scene.h"
-#include <CGAL/Qt/debug.h>
+#include "Settings_dialog.h"
 
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QTextStream>
-#include <QUrl>
 #include <QFileDialog>
 #include <QSettings>
-#include <QHeaderView>
 #include <QClipboard>
-
-#include <QMimeData>
 
 Mainwindow::Mainwindow(QWidget *parent) :
   CGAL::Qt::DemosMainWindow(parent)
@@ -146,9 +139,20 @@ void Mainwindow::on_actionShape_detection_triggered()
     return;
   settings.setValue("shape_detection_open_directory", filename);
 
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+  Settings_dialog dial;
+  dial.shape_detection->setEnabled(true);
+  if (dial.exec() != QDialog::Accepted)
+    return;
 
-  scene->shape_detection(filename.toStdString());
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  Params::Shape_detection params{
+    dial.shape_detection_probability->value(),
+    static_cast<std::size_t>(dial.shape_detection_min_points->value()),
+    dial.shape_detection_epsilon->value(),
+    dial.shape_detection_cluster_epsilon->value(),
+    dial.shape_detection_normal_threshold->value()};
+
+  scene->shape_detection(filename.toStdString(), params);
 
   updateViewerBBox();
   viewer->update();
