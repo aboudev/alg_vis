@@ -11,21 +11,6 @@
 
 #include <CGAL/IO/Polyhedron_iostream.h>
 
-#include "render_edges.h"
-
-Scene::Scene()
-{
-  m_pPolyhedron = nullptr;
-
-  // view options
-  m_view_polyhedron = true;
-}
-
-Scene::~Scene()
-{
-  delete m_pPolyhedron;
-}
-
 int Scene::open(QString filename)
 {
   QTextStream cerr(stderr);
@@ -96,11 +81,19 @@ void Scene::draw()
 
 void Scene::render_polyhedron()
 {
+  if (!m_pPolyhedron)
+    return;
+
   // draw black edges
-  if (m_pPolyhedron != nullptr) {
-    ::glDisable(GL_LIGHTING);
-    ::glColor3ub(0, 0, 0);
-    ::glLineWidth(1.0f);
-    gl_render_edges(*m_pPolyhedron);
+  ::glDisable(GL_LIGHTING);
+  ::glColor3ub(0, 0, 0);
+  ::glLineWidth(1.0f);
+  ::glBegin(GL_LINES);
+  for (auto he = m_pPolyhedron->edges_begin(); he != m_pPolyhedron->edges_end(); ++he) {
+    const Point& a = he->vertex()->point();
+    const Point& b = he->opposite()->vertex()->point();
+    ::glVertex3d(a.x(),a.y(),a.z());
+    ::glVertex3d(b.x(),b.y(),b.z());
   }
+  ::glEnd();
 }

@@ -40,13 +40,7 @@ protected slots:
   void on_actionCopy_snapshot_triggered();
 
   // algorithm menu
-  void on_actionRefine_loop_triggered();
-  void on_actionFit_triangles_triggered();
-  void on_actionFit_edges_triggered();
-  void on_actionFit_vertices_triggered();
-
   void on_actionShape_detection_triggered();
-
   void on_actionSurface_simplification_triggered();
 
   // view menu

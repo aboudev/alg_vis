@@ -10,8 +10,12 @@
 class Scene
 {
 public:
-  Scene();
-  ~Scene();
+  Scene() : m_pPolyhedron(nullptr), m_view_polyhedron(false) {}
+
+  ~Scene() {
+    if (m_pPolyhedron)
+      delete m_pPolyhedron;
+  }
 
 public:
   // file menu
@@ -26,11 +30,6 @@ public:
   }
 
   // algorithms
-  void refine_loop() {}
-  void fit_triangles() {}
-  void fit_edges() {}
-  void fit_vertices() {}
-  
   // RANSAC shape detection on point cloud algorithm
   int shape_detection(const std::string &fname);
 

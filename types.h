@@ -19,13 +19,4 @@ typedef CGAL::Bbox_3 Bbox;
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 typedef CGAL::Exact_predicates_inexact_constructions_kernel  Kernel2;
 
-// include and typedef for surface simplification algorithm
-#include "surface_simplification_include.h"
-typedef CGAL::Polyhedron_3<Kernel, CGAL::Polyhedron_items_with_id_3> Surface_mesh;
-typedef Surface_mesh::Point_3 SmPoint;
-typedef Surface_mesh::Halfedge_handle SmHalfedge_handle;
-typedef Surface_mesh::Vertex_handle SmVertex_handle;
-namespace SMS = CGAL::Surface_mesh_simplification;
-typedef SMS::Edge_profile<Surface_mesh> SmProfile;
-
 #endif // ALG_VIS_TYPES_H

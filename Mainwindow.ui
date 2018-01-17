@@ -58,11 +58,7 @@
     <property name="title">
      <string>Algorithms</string>
     </property>
-    <addaction name="actionFit_edges"/>
-    <addaction name="actionFit_vertices"/>
-    <addaction name="actionFit_triangles"/>
     <addaction name="separator"/>
-    <addaction name="actionRefine_loop"/>
     <addaction name="separator"/>
     <addaction name="actionShape_detection"/>
     <addaction name="separator"/>
@@ -115,26 +111,6 @@
   <action name="actionCopy_snapshot">
    <property name="text">
     <string>Copy snapshot</string>
-   </property>
-  </action>
-  <action name="actionRefine_loop">
-   <property name="text">
-    <string>Loop subdivision</string>
-   </property>
-  </action>
-  <action name="actionFit_vertices">
-   <property name="text">
-    <string>Fit vertices</string>
-   </property>
-  </action>
-  <action name="actionFit_edges">
-   <property name="text">
-    <string>Fit edges</string>
-   </property>
-  </action>
-  <action name="actionFit_triangles">
-   <property name="text">
-    <string>Fit triangles</string>
    </property>
   </action>
   <action name="actionShape_detection">

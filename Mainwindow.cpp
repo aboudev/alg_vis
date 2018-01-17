@@ -132,37 +132,6 @@ void Mainwindow::on_actionCopy_snapshot_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void Mainwindow::on_actionRefine_loop_triggered()
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  scene->refine_loop();
-  QApplication::restoreOverrideCursor();
-  viewer->update();
-}
-void Mainwindow::on_actionFit_triangles_triggered()
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  scene->fit_triangles();
-  viewer->update();
-  QApplication::restoreOverrideCursor();
-}
-
-void Mainwindow::on_actionFit_edges_triggered()
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  scene->fit_edges();
-  viewer->update();
-  QApplication::restoreOverrideCursor();
-}
-
-void Mainwindow::on_actionFit_vertices_triggered()
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  scene->fit_vertices();
-  viewer->update();
-  QApplication::restoreOverrideCursor();
-}
-
 void Mainwindow::on_actionShape_detection_triggered()
 {
   QSettings settings;
