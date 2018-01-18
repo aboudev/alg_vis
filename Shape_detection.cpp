@@ -10,6 +10,8 @@
 #include <fstream>
 
 #include <CGAL/IO/read_xyz_points.h>
+#include <CGAL/IO/read_ply_points.h>
+
 #include <CGAL/Point_with_normal_3.h>
 #include <CGAL/property_map.h>
 #include <CGAL/Shape_detection_3.h>
@@ -37,16 +39,20 @@ void Shape_detection::detect(const std::string &fname, const Params::Shape_detec
   typedef CGAL::Shape_detection_3::Plane<Traits>               RansacPlane;
 
   m_points.clear();
-  // Loads point set from a file. 
-  // read_xyz_points_and_normals takes an OutputIterator for storing the points
-  // and a property map to store the normal vector with each point.
-  std::ifstream stream(fname);
-  if (!stream ||
-    !CGAL::read_xyz_points_and_normals(stream,
-      std::back_inserter(m_points),
-      Point_map(),
-      Normal_map())) {
-    std::cerr << "Error: cannot read file cube.pwn" << std::endl;
+  // Loads point set from a file.
+  std::ifstream ifs(fname);
+  if (!ifs.is_open())
+    return;
+  bool is_successful = false;
+  if (fname.substr(fname.find_last_of('.')) == ".pwn")
+    is_successful = CGAL::read_xyz_points_and_normals(
+      ifs, std::back_inserter(m_points), Point_map(), Normal_map());
+  else if (fname.substr(fname.find_last_of('.')) == ".ply")
+    is_successful = CGAL::read_ply_points_and_normals(
+      ifs, std::back_inserter(m_points), Point_map(), Normal_map());
+  ifs.close();
+  if (!is_successful) {
+    std::cerr << "Error: cannot read file " << fname << std::endl;
     return;
   }
 

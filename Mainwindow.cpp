@@ -134,7 +134,7 @@ void Mainwindow::on_actionShape_detection_triggered()
     this,
     tr("Open point with normal"),
     settings.value("shape_detection_open_directory", ".").toString(),
-    tr("Point Cloud File (*.pwn)"));
+    tr("Point Cloud With Normal (*.ply *.pwn)"));
   if (filename.isEmpty())
     return;
   settings.setValue("shape_detection_open_directory", filename);
