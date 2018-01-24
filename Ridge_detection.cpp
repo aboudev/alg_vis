@@ -11,7 +11,6 @@
 #include <fstream>
 
 #include <CGAL/Kernel/global_functions.h>
-#include <CGAL/Surface_mesh.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 #include <CGAL/Ridges.h>
 #include <CGAL/Umbilics.h>
@@ -21,11 +20,6 @@
 #endif
 #include <gl/gl.h>
 #include "Color_256.h"
-
-typedef CGAL::Surface_mesh<Point_3> Surface_mesh;
-typedef boost::graph_traits<Surface_mesh>::vertex_descriptor vertex_descriptor;
-typedef boost::graph_traits<Surface_mesh>::vertex_iterator vertex_iterator;
-typedef boost::graph_traits<Surface_mesh>::face_descriptor face_descriptor;
 
 // property maps
 typedef boost::property_map<Surface_mesh, boost::vertex_point_t>::type VertexPoint_property_map;

@@ -62,7 +62,7 @@ int Surface_simplification::simplify(const std::string &filename)
     return EXIT_FAILURE;
   }
 
-  Surface_mesh surface_mesh;
+  Surface_mesh_wid surface_mesh;
   ifs >> surface_mesh;
   if (!ifs) {
     std::cerr << "invalid OFF file" << std::endl;
@@ -76,14 +76,14 @@ int Surface_simplification::simplify(const std::string &filename)
   // this id(), so we must do it here:
   int index = 0;
 
-  for (Surface_mesh::Halfedge_iterator eb = surface_mesh.halfedges_begin()
+  for (Surface_mesh_wid::Halfedge_iterator eb = surface_mesh.halfedges_begin()
     , ee = surface_mesh.halfedges_end()
     ; eb != ee
     ; ++eb
     )
     eb->id() = index++;
   index = 0;
-  for (Surface_mesh::Vertex_iterator vb = surface_mesh.vertices_begin()
+  for (Surface_mesh_wid::Vertex_iterator vb = surface_mesh.vertices_begin()
     , ve = surface_mesh.vertices_end()
     ; vb != ve
     ; ++vb
@@ -92,7 +92,7 @@ int Surface_simplification::simplify(const std::string &filename)
 
   // In this example, the simplification stops when the number of undirected edges
   // drops below 10% of the initial count
-  SMS::Count_ratio_stop_predicate<Surface_mesh> stop(0.1);
+  SMS::Count_ratio_stop_predicate<Surface_mesh_wid> stop(0.1);
 
   Stats stats;
 
@@ -106,8 +106,8 @@ int Surface_simplification::simplify(const std::string &filename)
   int r = SMS::edge_collapse
   (surface_mesh
     , stop
-    , CGAL::parameters::get_cost(SMS::Edge_length_cost<Surface_mesh>())
-    .get_placement(SMS::Midpoint_placement<Surface_mesh>())
+    , CGAL::parameters::get_cost(SMS::Edge_length_cost<Surface_mesh_wid>())
+    .get_placement(SMS::Midpoint_placement<Surface_mesh_wid>())
     .visitor(vis)
   );
 

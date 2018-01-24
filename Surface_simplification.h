@@ -26,12 +26,12 @@
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Midpoint_and_length.h> 
 
 // include and typedef for surface simplification algorithm
-typedef CGAL::Polyhedron_3<Kernel, CGAL::Polyhedron_items_with_id_3> Surface_mesh;
-typedef Surface_mesh::Point_3 SmPoint;
-typedef Surface_mesh::Halfedge_handle SmHalfedge_handle;
-typedef Surface_mesh::Vertex_handle SmVertex_handle;
+typedef CGAL::Polyhedron_3<Kernel, CGAL::Polyhedron_items_with_id_3> Surface_mesh_wid;
+typedef Surface_mesh_wid::Point_3 SmPoint;
+typedef Surface_mesh_wid::Halfedge_handle SmHalfedge_handle;
+typedef Surface_mesh_wid::Vertex_handle SmVertex_handle;
 namespace SMS = CGAL::Surface_mesh_simplification;
-typedef SMS::Edge_profile<Surface_mesh> SmProfile;
+typedef SMS::Edge_profile<Surface_mesh_wid> SmProfile;
 
 namespace Algs {
 
@@ -58,7 +58,7 @@ class Surface_simplification {
     std::size_t placement_uncomputable;
   };
 
-  struct My_visitor : SMS::Edge_collapse_visitor_base<Surface_mesh> {
+  struct My_visitor : SMS::Edge_collapse_visitor_base<Surface_mesh_wid> {
     My_visitor(Stats* s) : stats(s) {}
     // Called during the collecting phase for each edge collected.
     void OnCollected(SmProfile const&, boost::optional<double> const&)
