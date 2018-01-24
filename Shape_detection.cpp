@@ -22,7 +22,6 @@
 #include <windows.h>
 #endif
 #include <gl/gl.h>
-
 #include "Color_256.h"
 
 namespace Algs {
@@ -167,7 +166,8 @@ void Shape_detection::detect(const std::string &fname, const Params::Shape_detec
     c = static_cast<std::size_t>(std::rand() % 255);
 }
 
-void Shape_detection::draw() {
+void Shape_detection::draw()
+{
   if (m_points.empty())
     return;
 

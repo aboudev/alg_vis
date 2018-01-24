@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include "types.h"
+#include "parameters.h"
 
 namespace Algs {
   class Shape_detection;
@@ -19,7 +20,7 @@ public:
   // file menu
   int open(const std::string &fname);
 
-  const Bbox &bbox() { return m_bbox; }
+  const Bbox_3 &bbox() { return m_bbox; }
 
   // toggle view options
   void toggle_view_poyhedron() {
@@ -41,7 +42,7 @@ public:
 private:
   // member data
   Polyhedron *m_pPolyhedron;
-  Bbox m_bbox;
+  Bbox_3 m_bbox;
 
   // view options
   bool m_view_polyhedron;

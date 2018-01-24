@@ -8,6 +8,7 @@
 #define Scene_shape_detection_H
 
 #include "types.h"
+#include "parameters.h"
 
 namespace Algs {
 
@@ -23,14 +24,14 @@ class Shape_detection {
 public:
   Shape_detection() {}
 
-  const Bbox & bbox() { return m_bbox; }
-
   void detect(const std::string &fname, const Params::Shape_detection &params);
+
+  const Bbox_3 &bbox() { return m_bbox; }
 
   void draw();
 
 private:
-  Bbox m_bbox;
+  Bbox_3 m_bbox;
 
   // points with normals.
   Pwn_vector m_points;

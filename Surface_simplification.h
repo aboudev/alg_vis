@@ -8,6 +8,7 @@
 #define SURFACE_SIMPLIFICATION_H
 
 #include "types.h"
+#include "parameters.h"
 
 #include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
 // Simplification function
@@ -113,14 +114,14 @@ class Surface_simplification {
 public:
   Surface_simplification() : m_pPolyhedron(nullptr) {}
 
-  const Bbox &bbox() { return m_bbox; }
+  const Bbox_3 &bbox() { return m_bbox; }
 
   int simplify();
 
   int simplify(const std::string &filename);
 
 private:
-  Bbox m_bbox;
+  Bbox_3 m_bbox;
   Polyhedron *m_pPolyhedron;
 };
 

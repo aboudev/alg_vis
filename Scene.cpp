@@ -112,8 +112,8 @@ void Scene::render_polyhedron()
   ::glLineWidth(1.0f);
   ::glBegin(GL_LINES);
   for (auto he = m_pPolyhedron->edges_begin(); he != m_pPolyhedron->edges_end(); ++he) {
-    const Point &a = he->vertex()->point();
-    const Point &b = he->opposite()->vertex()->point();
+    const Point_3 &a = he->vertex()->point();
+    const Point_3 &b = he->opposite()->vertex()->point();
     ::glVertex3d(a.x(), a.y(), a.z());
     ::glVertex3d(b.x(), b.y(), b.z());
   }

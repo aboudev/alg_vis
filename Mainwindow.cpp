@@ -41,7 +41,7 @@ Mainwindow::~Mainwindow()
 
 void Mainwindow::updateViewerBBox()
 {
-  const Bbox bbox = scene->bbox();
+  const Bbox_3 bbox = scene->bbox();
   const qglviewer::Vec vec_min(
     bbox.xmin(), bbox.ymin(), bbox.zmin());
   const qglviewer::Vec vec_max(
