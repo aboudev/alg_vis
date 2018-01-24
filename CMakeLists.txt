@@ -49,6 +49,7 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
   add_executable(${PRJ_NAME}
     Color_256.cpp
     Shape_detection.cpp
+    Ridge_detection.cpp
     Surface_simplification.cpp
     Scene.cpp
     Viewer.cpp
