@@ -28,6 +28,10 @@ public:
 
 private:
   Bbox_3 m_bbox;
+
+  // rendering data
+  std::vector<std::vector<Point_3>> m_ridges;
+  std::vector<Point_3> m_umbilics;
 };
 
 } // namespace Algs

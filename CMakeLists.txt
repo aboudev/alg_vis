@@ -32,6 +32,12 @@ if(Qt5_FOUND)
   find_package(QGLViewer)
 endif(Qt5_FOUND)
 
+# Find Eigen for eidge detection
+find_package(Eigen3 3 REQUIRED)
+if (EIGEN3_FOUND)
+  include( ${EIGEN3_USE_FILE} )
+endif()
+
 if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
 
   # Include this package's headers first
