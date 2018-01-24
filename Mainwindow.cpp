@@ -127,6 +127,27 @@ void Mainwindow::on_actionCopy_snapshot_triggered()
   QApplication::restoreOverrideCursor();
 }
 
+void Mainwindow::on_actionSurface_simplification_triggered()
+{
+  QSettings settings;
+  const QString filename = QFileDialog::getOpenFileName(
+    this,
+    tr("Load surface mesh..."),
+    settings.value("surface_simplification_open_directory", ".").toString(),
+    tr("OFF files (*.off)"));
+  if (filename.isEmpty())
+    return;
+  settings.setValue("surface_simplification_open_directory", filename);
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+  scene->surface_simplification(filename.toStdString());
+
+  // updateViewerBBox();
+  // viewer->update();
+  QApplication::restoreOverrideCursor();
+}
+
 void Mainwindow::on_actionShape_detection_triggered()
 {
   QSettings settings;
@@ -159,24 +180,35 @@ void Mainwindow::on_actionShape_detection_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void Mainwindow::on_actionSurface_simplification_triggered()
+void Mainwindow::on_actionRidge_detection_triggered()
 {
   QSettings settings;
   const QString filename = QFileDialog::getOpenFileName(
     this,
-    tr("Load surface mesh..."),
-    settings.value("surface_simplification_open_directory", ".").toString(),
+    tr("Triangle mesh"),
+    settings.value("ridge_detection_open_directory", ".").toString(),
     tr("OFF files (*.off)"));
   if (filename.isEmpty())
     return;
-  settings.setValue("surface_simplification_open_directory", filename);
+  settings.setValue("ridge_detection_open_directory", filename);
+
+  // Settings_dialog dial;
+  // dial.shape_detection->setEnabled(true);
+  // if (dial.exec() != QDialog::Accepted)
+  //   return;
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
+  // Params::Shape_detection params{
+  //   dial.shape_detection_probability->value(),
+  //   static_cast<std::size_t>(dial.shape_detection_min_points->value()),
+  //   dial.shape_detection_epsilon->value(),
+  //   dial.shape_detection_cluster_epsilon->value(),
+  //   dial.shape_detection_normal_threshold->value()};
 
-  scene->surface_simplification(filename.toStdString());
+  scene->ridge_detection(filename.toStdString());
 
-  // updateViewerBBox();
-  // viewer->update();
+  updateViewerBBox();
+  viewer->update();
   QApplication::restoreOverrideCursor();
 }
 

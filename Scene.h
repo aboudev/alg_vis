@@ -5,8 +5,9 @@
 #include "parameters.h"
 
 namespace Algs {
-  class Shape_detection;
   class Surface_simplification;
+  class Shape_detection;
+  class Ridge_detection;
 }
 
 class Scene
@@ -28,12 +29,14 @@ public:
   }
 
   // algorithms
+  // triangulated surface mesh simplification algorithm
+  int surface_simplification(const std::string &fname);
+
   // RANSAC shape detection on point cloud algorithm
   int shape_detection(const std::string &fname, const Params::Shape_detection &params);
 
-  // triangulated surface mesh simplification algorithm
-  //int surface_simplification();
-  int surface_simplification(const std::string &fname);
+  // Ridge approximation
+  int ridge_detection(const std::string &fname);
 
   // rendering
   void draw(); 
@@ -48,8 +51,9 @@ private:
   bool m_view_polyhedron;
 
   // algorithms
-  Algs::Shape_detection *m_shape_detection;
   Algs::Surface_simplification *m_surface_simplification;
+  Algs::Shape_detection *m_shape_detection;
+  Algs::Ridge_detection *m_ridge_detection;
 }; // end class Scene
 
 

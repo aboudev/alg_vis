@@ -29,6 +29,8 @@ public:
 private:
   Bbox_3 m_bbox;
 
+  Surface_mesh m_mesh;
+
   // rendering data
   std::vector<std::vector<Point_3>> m_ridges;
   std::vector<Point_3> m_umbilics;

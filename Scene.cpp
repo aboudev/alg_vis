@@ -1,6 +1,7 @@
 #include "Scene.h"
-#include "Shape_detection.h"
 #include "Surface_simplification.h"
+#include "Shape_detection.h"
+#include "Ridge_detection.h"
 
 #include <iostream>
 #include <fstream>
@@ -15,17 +16,20 @@
 Scene::Scene() :
   m_pPolyhedron(nullptr),
   m_view_polyhedron(false),
+  m_surface_simplification(nullptr),
   m_shape_detection(nullptr),
-  m_surface_simplification(nullptr) {
+  m_ridge_detection(nullptr) {
 }
 
 Scene::~Scene() {
   if (m_pPolyhedron)
     delete m_pPolyhedron;
-  if (m_shape_detection)
-    delete m_shape_detection;
   if (m_surface_simplification)
     delete m_surface_simplification;
+  if (m_shape_detection)
+    delete m_shape_detection;
+  if (m_ridge_detection)
+    delete m_ridge_detection;
 }
 
 int Scene::open(const std::string &fname)
@@ -59,21 +63,6 @@ int Scene::open(const std::string &fname)
   return 0;
 }
 
-int Scene::shape_detection(const std::string &fname, const Params::Shape_detection &params)
-{
-  if (m_shape_detection)
-    delete m_shape_detection;
-
-  m_shape_detection = new Algs::Shape_detection();
-  m_shape_detection->detect(fname, params);
-
-  // update viewing bbox
-  m_bbox = m_shape_detection->bbox();
-  m_view_polyhedron = false;
-
-  return 0;
-}
-
 int Scene::surface_simplification(const std::string &fname)
 {
   if (m_surface_simplification)
@@ -89,16 +78,49 @@ int Scene::surface_simplification(const std::string &fname)
   return 0;
 }
 
+int Scene::shape_detection(const std::string &fname, const Params::Shape_detection &params)
+{
+  if (m_shape_detection)
+    delete m_shape_detection;
+
+  m_shape_detection = new Algs::Shape_detection();
+  m_shape_detection->detect(fname, params);
+
+  // update viewing bbox
+  m_bbox = m_shape_detection->bbox();
+  m_view_polyhedron = false;
+
+  return 0;
+}
+
+int Scene::ridge_detection(const std::string &fname)
+{
+  if (m_ridge_detection)
+    delete m_ridge_detection;
+
+  m_ridge_detection = new Algs::Ridge_detection();
+  m_ridge_detection->detect(fname);
+
+  // update viewing bbox
+  m_bbox = m_ridge_detection->bbox();
+  m_view_polyhedron = false;
+
+  return 0;
+}
+
 void Scene::draw()
 {
   if (m_view_polyhedron)
     render_polyhedron();
 
+  // if (m_surface_simplification)
+  //   m_surface_simplification->draw();
+
   if (m_shape_detection)
     m_shape_detection->draw();
 
-  // if (m_surface_simplification)
-  //   m_surface_simplification->draw();
+  if (m_ridge_detection)
+    m_ridge_detection->draw();
 }
 
 void Scene::render_polyhedron()

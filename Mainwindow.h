@@ -39,8 +39,9 @@ protected slots:
   void on_actionCopy_snapshot_triggered();
 
   // algorithm menu
-  void on_actionShape_detection_triggered();
   void on_actionSurface_simplification_triggered();
+  void on_actionShape_detection_triggered();
+  void on_actionRidge_detection_triggered();
 
   // view menu
   void on_actionView_polyhedron_triggered();

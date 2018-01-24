@@ -97,40 +97,45 @@ void Ridge_detection::detect(const std::string &fname)
     std::cerr << "Error: failed to open " << fname << std::endl;
     return;
   }
-  Surface_mesh P;
-  ifs >> P;
+  m_mesh = Surface_mesh();
+  ifs >> m_mesh;
+  ifs.close();
 
-  if (min_nb_points > num_vertices(P)) {
+  if (min_nb_points > num_vertices(m_mesh)) {
     std::cerr << "not enough points in the model" << std::endl;
     return;
   }
 
   //initialize the property maps
-  vpm = get(CGAL::vertex_point, P);
-  fvm = P.add_property_map<face_descriptor, Vector_3>("f:n", Vector_3(0, 0, 0)).first;
+  vpm = get(CGAL::vertex_point, m_mesh);
+  fvm = m_mesh.add_property_map<face_descriptor, Vector_3>("f:n", Vector_3(0, 0, 0)).first;
   //initialize Polyhedral data : normal of facets
-  compute_facets_normal(P);
+  compute_facets_normal(m_mesh);
 
-  vertex_k1_pm = P.add_property_map<vertex_descriptor, FT>("v:k1", 0).first;
-  vertex_k2_pm = P.add_property_map<vertex_descriptor, FT>("v:k2", 0).first;
-  vertex_b0_pm = P.add_property_map<vertex_descriptor, FT>("v:b0", 0).first;
-  vertex_b3_pm = P.add_property_map<vertex_descriptor, FT>("v:b3", 0).first;
-  vertex_P1_pm = P.add_property_map<vertex_descriptor, FT>("v:P1", 0).first;
-  vertex_P2_pm = P.add_property_map<vertex_descriptor, FT>("v:P2", 0).first;
-  vertex_d1_pm = P.add_property_map<vertex_descriptor, Vector_3>("v:d1", Vector_3(0, 0, 0)).first;
-  vertex_d2_pm = P.add_property_map<vertex_descriptor, Vector_3>("v:d2", Vector_3(0, 0, 0)).first;
+  m_bbox = get(vpm, *vertices(m_mesh).first).bbox();
+  BOOST_FOREACH(const vertex_descriptor v, vertices(m_mesh))
+    m_bbox += get(vpm, v).bbox();
+
+  vertex_k1_pm = m_mesh.add_property_map<vertex_descriptor, FT>("v:k1", 0).first;
+  vertex_k2_pm = m_mesh.add_property_map<vertex_descriptor, FT>("v:k2", 0).first;
+  vertex_b0_pm = m_mesh.add_property_map<vertex_descriptor, FT>("v:b0", 0).first;
+  vertex_b3_pm = m_mesh.add_property_map<vertex_descriptor, FT>("v:b3", 0).first;
+  vertex_P1_pm = m_mesh.add_property_map<vertex_descriptor, FT>("v:P1", 0).first;
+  vertex_P2_pm = m_mesh.add_property_map<vertex_descriptor, FT>("v:P2", 0).first;
+  vertex_d1_pm = m_mesh.add_property_map<vertex_descriptor, Vector_3>("v:d1", Vector_3(0, 0, 0)).first;
+  vertex_d2_pm = m_mesh.add_property_map<vertex_descriptor, Vector_3>("v:d2", Vector_3(0, 0, 0)).first;
 
   //create a Poly_rings object
-  Poly_rings poly_rings(P);
+  Poly_rings poly_rings(m_mesh);
 
   //compute differential quantities with the jet fitting package
   std::cout << "Compute differential quantities via jet fitting..." << std::endl;
-  compute_differential_quantities(P, poly_rings);
+  compute_differential_quantities(m_mesh, poly_rings);
 
   //Ridges
   //--------------------------------------------------------------------------
   std::cout << "Compute ridges..." << std::endl;
-  Ridge_approximation ridge_approximation(P,
+  Ridge_approximation ridge_approximation(m_mesh,
     vertex_k1_pm, vertex_k2_pm,
     vertex_b0_pm, vertex_b3_pm,
     vertex_d1_pm, vertex_d2_pm,
@@ -143,7 +148,7 @@ void Ridge_detection::detect(const std::string &fname)
   ridge_approximation.compute_crest_ridges(std::back_inserter(ridge_lines), tag_order);
 
   // or with the global function
-  // CGAL::compute_max_ridges(P,
+  // CGAL::compute_max_ridges(m_mesh,
   //   vertex_k1_pm, vertex_k2_pm,
   //   vertex_b0_pm, vertex_b3_pm,
   //   vertex_d1_pm, vertex_d2_pm,
@@ -156,8 +161,8 @@ void Ridge_detection::detect(const std::string &fname)
   for (const auto &rl : ridge_lines) {
     std::vector<Point_3> ridge;
     for (const auto &rhe : *(rl->line())) {
-      const Vector_3 p = get(vpm, source(rhe.first, P)) - CGAL::ORIGIN;
-      const Vector_3 q = get(vpm, target(rhe.first, P)) - CGAL::ORIGIN;
+      const Vector_3 p = get(vpm, source(rhe.first, m_mesh)) - CGAL::ORIGIN;
+      const Vector_3 q = get(vpm, target(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Point_3 pt = CGAL::ORIGIN + (p * rhe.second + (1.0 - rhe.second) * q);
       ridge.push_back(pt);
     }
@@ -169,7 +174,7 @@ void Ridge_detection::detect(const std::string &fname)
   // UMBILICS
   //--------------------------------------------------------------------------
   std::cout << "Compute umbilics..." << std::endl;
-  Umbilic_approximation umbilic_approximation(P,
+  Umbilic_approximation umbilic_approximation(m_mesh,
     vertex_k1_pm, vertex_k2_pm,
     vertex_d1_pm, vertex_d2_pm);
   std::vector<Umbilic *> umbilics;
@@ -186,16 +191,52 @@ void Ridge_detection::detect(const std::string &fname)
   }
 }
 
-void Ridge_detection::draw() {}
+void Ridge_detection::draw()
+{
+  ::glEnable(GL_LIGHTING);
+  ::glColor3ub(128, 128, 128);
+  ::glBegin(GL_TRIANGLES);
+  BOOST_FOREACH(const face_descriptor f, faces(m_mesh)) {
+    const Vector_3 &n = get(fvm, f);
+    ::glNormal3d(n.x(), n.y(), n.z());
+
+    halfedge_descriptor h = halfedge(f, m_mesh);
+    const Point_3 &p0 = get(vpm, source(h, m_mesh));
+    const Point_3 &p1 = get(vpm, target(h, m_mesh));
+    const Point_3 &p2 = get(vpm, target(next(h, m_mesh), m_mesh));
+    ::glVertex3d(p0.x(), p0.y(), p0.z());
+    ::glVertex3d(p1.x(), p1.y(), p1.z());
+    ::glVertex3d(p2.x(), p2.y(), p2.z());
+  }
+  ::glEnd();
+
+  ::glDisable(GL_LIGHTING);
+  ::glColor3ub(255, 0, 0);
+  ::glLineWidth(2.0);
+  for (const auto &r : m_ridges) {
+    ::glBegin(GL_LINE_STRIP);
+    for (const auto &p : r)
+      ::glVertex3d(p.x(), p.y(), p.z());
+    ::glEnd();
+  }
+
+  ::glDisable(GL_LIGHTING);
+  ::glColor3ub(255, 0, 0);
+  ::glPointSize(5.0);
+  ::glBegin(GL_POINTS);
+  for (const auto &p : m_umbilics)
+    ::glVertex3d(p.x(), p.y(), p.z());
+  ::glEnd();
+}
 
 } // Algs
 
 void compute_facets_normal(const Surface_mesh &P) {
   BOOST_FOREACH(face_descriptor f, faces(P)) {
-    const boost::graph_traits<Surface_mesh>::halfedge_descriptor he = halfedge(f, P);
-    const Point_3 &p0 = get(vpm, source(he, P));
-    const Point_3 &p1 = get(vpm, target(he, P));
-    const Point_3 &p2 = get(vpm, target(next(he, P), P));
+    halfedge_descriptor h = halfedge(f, P);
+    const Point_3 &p0 = get(vpm, source(h, P));
+    const Point_3 &p1 = get(vpm, target(h, P));
+    const Point_3 &p2 = get(vpm, target(next(h, P), P));
     put(fvm, f, CGAL::unit_normal(p0, p1, p2));
   }
 }

@@ -58,11 +58,11 @@
     <property name="title">
      <string>Algorithms</string>
     </property>
-    <addaction name="separator"/>
+    <addaction name="actionSurface_simplification"/>
     <addaction name="separator"/>
     <addaction name="actionShape_detection"/>
     <addaction name="separator"/>
-    <addaction name="actionSurface_simplification"/>
+    <addaction name="actionRidge_detection"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -121,6 +121,11 @@
   <action name="actionSurface_simplification">
    <property name="text">
     <string>Surface simplification</string>
+   </property>
+  </action>
+  <action name="actionRidge_detection">
+   <property name="text">
+    <string>Ridge detection</string>
    </property>
   </action>
  </widget>
