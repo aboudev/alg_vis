@@ -106,6 +106,10 @@ void Ridge_detection::detect(const std::string &fname)
     return;
   }
 
+  std::cout << "#v " << num_vertices(m_mesh) 
+    << "\n#e " << num_edges(m_mesh)
+    << "\n#f " << num_faces(m_mesh) << std::endl;
+
   //initialize the property maps
   vpm = get(CGAL::vertex_point, m_mesh);
   fvm = m_mesh.add_property_map<face_descriptor, Vector_3>("f:n", Vector_3(0, 0, 0)).first;
@@ -194,7 +198,7 @@ void Ridge_detection::detect(const std::string &fname)
 void Ridge_detection::draw()
 {
   ::glEnable(GL_LIGHTING);
-  ::glColor3ub(128, 128, 128);
+  ::glColor3ub(192, 192, 192);
   ::glBegin(GL_TRIANGLES);
   BOOST_FOREACH(const face_descriptor f, faces(m_mesh)) {
     const Vector_3 &n = get(fvm, f);
@@ -221,7 +225,7 @@ void Ridge_detection::draw()
   }
 
   ::glDisable(GL_LIGHTING);
-  ::glColor3ub(255, 0, 0);
+  ::glColor3ub(0, 255, 0);
   ::glPointSize(5.0);
   ::glBegin(GL_POINTS);
   for (const auto &p : m_umbilics)
