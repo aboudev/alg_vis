@@ -212,6 +212,38 @@ void Mainwindow::on_actionRidge_detection_triggered()
   QApplication::restoreOverrideCursor();
 }
 
+void Mainwindow::on_actionCustom_plane_detection_triggered()
+{
+  QSettings settings;
+  const QString filename = QFileDialog::getOpenFileName(
+    this,
+    tr("Open point with normal"),
+    settings.value("custom_plane_detection_open_directory", ".").toString(),
+    tr("Point Cloud With Normal (*.ply *.pwn)"));
+  if (filename.isEmpty())
+    return;
+  settings.setValue("custom_plane_detection_open_directory", filename);
+
+  Settings_dialog dial;
+  dial.cplane_detection->setEnabled(true);
+  if (dial.exec() != QDialog::Accepted)
+    return;
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  Params::Shape_detection params{
+    dial.cplane_detection_probability->value(),
+    static_cast<std::size_t>(dial.cplane_detection_min_points->value()),
+    dial.cplane_detection_epsilon->value(),
+    dial.cplane_detection_cluster_epsilon->value(),
+    dial.cplane_detection_normal_threshold->value()};
+
+  scene->custom_plane_detection(filename.toStdString(), params);
+
+  updateViewerBBox();
+  viewer->update();
+  QApplication::restoreOverrideCursor();
+}
+
 void Mainwindow::on_actionView_polyhedron_triggered()
 {
   scene->toggle_view_poyhedron();

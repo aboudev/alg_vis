@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////
 // Author: ZLJ
-// Date: 2018-01-16
+// Date: 2018-01-30
 // RVG, NLPR, CASIA
 ////////////////////////////////////////////////////
 
-#ifndef Shape_detection_H
-#define Shape_detection_H
+#ifndef Custom_plane_detection_H
+#define Custom_plane_detection_H
 
 #include "types.h"
 #include "parameters.h"
@@ -13,16 +13,16 @@
 namespace Algs {
 
 /************************************************************************/
-/* RANSAC Shape Detection Algorithm                                     */
-/* http://doc.cgal.org/latest/Point_set_shape_detection_3/index.html    */
+/* RANSAC Custom Plane Detection                                        */
+/* Plane with constraint parameter, e.g. horizontal                     */
 /************************************************************************/
-class Shape_detection {
+class Custom_plane_detection {
   // Type declarations
   typedef std::pair<Kernel2::Point_3, Kernel2::Vector_3>       Point_with_normal;
   typedef std::vector<Point_with_normal>                       Pwn_vector;
 
 public:
-  Shape_detection() {}
+  Custom_plane_detection() {}
 
   void detect(const std::string &fname, const Params::Shape_detection &params);
 
@@ -46,4 +46,4 @@ private:
 
 } // namespace Algs
 
-#endif // Shape_detection_H
+#endif // Custom_plane_detection_H

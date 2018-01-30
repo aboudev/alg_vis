@@ -7,6 +7,7 @@
 namespace Algs {
   class Surface_simplification;
   class Shape_detection;
+  class Custom_plane_detection;
   class Ridge_detection;
 }
 
@@ -35,6 +36,9 @@ public:
   // RANSAC shape detection on point cloud algorithm
   int shape_detection(const std::string &fname, const Params::Shape_detection &params);
 
+  // RANSAC custom plane detection on point cloud algorithm
+  int custom_plane_detection(const std::string &fname, const Params::Shape_detection &params);
+
   // Ridge approximation
   int ridge_detection(const std::string &fname);
 
@@ -53,6 +57,7 @@ private:
   // algorithms
   Algs::Surface_simplification *m_surface_simplification;
   Algs::Shape_detection *m_shape_detection;
+  Algs::Custom_plane_detection *m_custom_plane_detection;
   Algs::Ridge_detection *m_ridge_detection;
 }; // end class Scene
 
