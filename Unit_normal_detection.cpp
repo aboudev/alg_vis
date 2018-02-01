@@ -26,6 +26,13 @@
 /*!
  * \brief Unit_normal derives from Shape_base.
  * Only calculate normal deviation.
+ * Since RANSAC requires real points in the space to calculate squared distance,
+ * cluster distance measurement and data spatial re-structuring, so we treat
+ * normal as points on the unit sphere.
+ * To capture normal deviation better, we use the squared vector difference
+ * instead of vector dot product. (Intuitive, nedd to justify)
+ * Similarly, the Euclidean distance is defined as squared vector difference
+ * instead of point to plane distance.
  */
 template <class Traits>
 class Unit_normal : public CGAL::Shape_detection_3::Shape_base<Traits> {
@@ -44,7 +51,12 @@ public:
 
   // Computes squared Euclidean distance from query point to the shape.
   virtual FT squared_distance(const Point &p) const {
-    return FT(0.0);
+    // point to tangent plane Euclidean distance
+    // const FT sd = (p - m_normal_point) * m_normal;
+    // return sd * sd;
+
+    // squared vector difference
+    return (p - m_normal_point) * (p - m_normal_point);
   }
 
   // Returns a string with shape parameters.
@@ -60,6 +72,7 @@ protected:
   // Constructs shape based on minimal set of samples from the input data.    
   virtual void create_shape(const std::vector<std::size_t> &indices) {
     m_normal = this->normal(indices[0]);
+    m_normal_point = CGAL::ORIGIN + m_normal;
     this->m_is_valid = true;
   }
 
@@ -67,16 +80,25 @@ protected:
   virtual void squared_distance(
     const std::vector<std::size_t> &indices,
     std::vector<FT> &dists) const {
-    for (std::size_t i = 0; i < indices.size(); i++)
-      dists[i] = FT(0.0);
+    for (std::size_t i = 0; i < indices.size(); i++) {
+      // point to tangent plane Euclidean distance
+      // const FT sd = (this->point(indices[i]) - m_normal_point) * m_normal;
+      // dists[i] = sd * sd;
+
+      // squared vector difference
+      dists[i] = (this->point(indices[i]) - m_normal_point) * (this->point(indices[i]) - m_normal_point);
+    }
   }
 
   // Computes the normal deviation between shape and a set of points with normals.
   virtual void cos_to_normal(
     const std::vector<std::size_t> &indices,
     std::vector<FT> &angles) const {
-    for (std::size_t i = 0; i < indices.size(); i++)
-      angles[i] = CGAL::abs(this->normal(indices[i]) * m_normal);
+    for (std::size_t i = 0; i < indices.size(); i++) {
+      // angles[i] = FT(1.0) -
+      //   (this->normal(indices[i]) - m_normal) * (this->normal(indices[i]) - m_normal);
+      angles[i] = this->normal(indices[i]) * m_normal;
+    }
   }
 
   // Returns the number of required samples for construction.
@@ -85,7 +107,9 @@ protected:
   }
 
 private:
+  // normal and normal point is basically the same thing
   Vector m_normal;
+  Point m_normal_point;
 };
 
 namespace Algs {
@@ -94,12 +118,13 @@ void Unit_normal_detection::detect(
   const std::string &fname,
   const Params::Shape_detection &params)
 {
-  typedef CGAL::First_of_pair_property_map<Point_with_normal> Point_map;
-  typedef CGAL::Second_of_pair_property_map<Point_with_normal> Normal_map;
+  typedef CGAL::Nth_of_tuple_property_map<0, Point_with_normal_point> Point_map;
+  typedef CGAL::Nth_of_tuple_property_map<1, Point_with_normal_point> Normal_map;
+  typedef CGAL::Nth_of_tuple_property_map<2, Point_with_normal_point> Normal_point_map;
   // In Shape_detection_traits the basic types, i.e., Point and Vector types
   // as well as iterator type and property maps, are defined.
   typedef CGAL::Shape_detection_3::Shape_detection_traits
-    <Kernel2, Pwn_vector, Point_map, Normal_map> Traits;
+    <Kernel2, Pwnp_vector, Normal_point_map, Normal_map> Traits;
   typedef CGAL::Shape_detection_3::Efficient_RANSAC<Traits> Efficient_ransac;
   typedef Unit_normal<Traits> Unit_normal;
 
@@ -121,6 +146,17 @@ void Unit_normal_detection::detect(
     return;
   }
 
+  // update viewing bbox
+  if (!m_points.empty()) {
+    m_bbox = m_points.front().get<0>().bbox();
+    for (auto &p : m_points)
+      m_bbox = m_bbox + p.get<0>().bbox();
+  }
+
+  // setup normal to points on sphere
+  for (auto &pwnp : m_points)
+    pwnp.get<2>() = CGAL::ORIGIN + pwnp.get<1>();
+
   Efficient_ransac::Parameters parameters;
   // Sets probability to miss the largest primitive at each iteration.
   parameters.probability = params.probability;
@@ -139,6 +175,7 @@ void Unit_normal_detection::detect(
   Efficient_ransac ransac;
   ransac.set_input(m_points);
   ransac.add_shape_factory<Unit_normal>();
+  // ransac.add_shape_factory<CGAL::Shape_detection_3::Plane<Traits>>();
   ransac.preprocess();
   ransac.detect(parameters);
 
@@ -153,7 +190,7 @@ void Unit_normal_detection::detect(
   for (const auto s : shapes) {
     FT sum_distances = 0;
     for (const std::size_t pidx : s->indices_of_assigned_points()) {
-      sum_distances += CGAL::sqrt(s->squared_distance(m_points[pidx].first));
+      sum_distances += CGAL::sqrt(s->squared_distance(m_points[pidx].get<2>()));
       m_point_shapes[pidx] = sidx;
     }
 
@@ -163,13 +200,6 @@ void Unit_normal_detection::detect(
     ++sidx;
   }
   std::cout << "done" << std::endl;
-
-  // update viewing bbox
-  if (!m_points.empty()) {
-    m_bbox = m_points.begin()->first.bbox();
-    for (auto &p : m_points)
-      m_bbox = m_bbox + p.first.bbox();
-  }
 
   // random color table
   m_shape_colors = std::vector<std::size_t>(shapes.size(), 0);
@@ -195,7 +225,7 @@ void Unit_normal_detection::draw()
     else
       ::glColor3ub(0, 0, 0);
 
-    const Kernel2::Point_3 &p = m_points[pidx].first;
+    const Kernel2::Point_3 &p = m_points[pidx].get<0>();
     ::glVertex3d(p.x(), p.y(), p.z());
   }
   ::glEnd();
@@ -217,27 +247,10 @@ void Unit_normal_detection::draw()
     else
       ::glColor3ub(0, 0, 0);
 
-    const Kernel2::Vector_3 &n = m_points[pidx].second;
+    const Kernel2::Vector_3 &n = m_points[pidx].get<1>();
     ::glVertex3d(bbx_center.x() + n.x(), bbx_center.y() + n.y(), bbx_center.z() + n.z());
   }
   ::glEnd();
-
-  // draw detected nomrals at bbox center
-  // ::glDisable(GL_LIGHTING);
-  // ::glLineWidth(3.0);
-  // ::glBegin(GL_LINES);
-  // for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
-  //   if (m_point_shapes[pidx] >= 0) {
-  //     const std::size_t cidx = m_shape_colors[m_point_shapes[pidx]];
-  //     ::glColor3ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx));
-  //   }
-  //   else
-  //     ::glColor3ub(0, 0, 0);
-
-  //   const Kernel2::Vector_3 &n = m_points[pidx].second;
-  //   ::glVertex3d(bbx_center.x() + n.x(), bbx_center.y() + n.y(), bbx_center.z() + n.z());
-  // }
-  // ::glEnd();
 }
 
 } // Algs

@@ -10,6 +10,8 @@
 #include "types.h"
 #include "parameters.h"
 
+#include <boost/tuple/tuple.hpp>
+
 namespace Algs {
 
 /************************************************************************/
@@ -18,8 +20,8 @@ namespace Algs {
 /************************************************************************/
 class Unit_normal_detection {
   // Type declarations
-  typedef std::pair<Kernel2::Point_3, Kernel2::Vector_3>       Point_with_normal;
-  typedef std::vector<Point_with_normal>                       Pwn_vector;
+  typedef boost::tuple<Kernel2::Point_3, Kernel2::Vector_3, Kernel2::Point_3> Point_with_normal_point;
+  typedef std::vector<Point_with_normal_point> Pwnp_vector;
 
 public:
   Unit_normal_detection() {}
@@ -33,8 +35,8 @@ public:
 private:
   Bbox_3 m_bbox;
 
-  // points with normals.
-  Pwn_vector m_points;
+  // points with normals and normal points.
+  Pwnp_vector m_points;
   // shape index of each point
   std::vector<int> m_point_shapes;
   // shape color

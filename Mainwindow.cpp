@@ -225,7 +225,7 @@ void Mainwindow::on_actionUnit_normal_detection_triggered()
   settings.setValue("unit_normal_detection_open_directory", filename);
 
   Settings_dialog dial;
-  dial.hplane_detection->setEnabled(true);
+  dial.unormal_detection->setEnabled(true);
   if (dial.exec() != QDialog::Accepted)
     return;
 
