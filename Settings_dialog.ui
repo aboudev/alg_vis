@@ -168,7 +168,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="cplane_detection">
+    <widget class="QGroupBox" name="hplane_detection">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -213,7 +213,7 @@
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QDoubleSpinBox" name="cplane_detection_probability">
+         <widget class="QDoubleSpinBox" name="hplane_detection_probability">
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -246,7 +246,7 @@
          </widget>
         </item>
         <item row="2" column="2">
-         <widget class="QDoubleSpinBox" name="cplane_detection_epsilon">
+         <widget class="QDoubleSpinBox" name="hplane_detection_epsilon">
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -262,7 +262,7 @@
          </widget>
         </item>
         <item row="3" column="2">
-         <widget class="QDoubleSpinBox" name="cplane_detection_cluster_epsilon">
+         <widget class="QDoubleSpinBox" name="hplane_detection_cluster_epsilon">
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -275,7 +275,7 @@
          </widget>
         </item>
         <item row="4" column="2">
-         <widget class="QDoubleSpinBox" name="cplane_detection_normal_threshold">
+         <widget class="QDoubleSpinBox" name="hplane_detection_normal_threshold">
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -294,7 +294,7 @@
          </widget>
         </item>
         <item row="1" column="2">
-         <widget class="QSpinBox" name="cplane_detection_min_points">
+         <widget class="QSpinBox" name="hplane_detection_min_points">
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>

@@ -62,7 +62,7 @@
     <addaction name="separator"/>
     <addaction name="actionShape_detection"/>
     <addaction name="separator"/>
-    <addaction name="actionCustom_plane_detection"/>
+    <addaction name="actionHorizontal_plane_detection"/>
     <addaction name="separator"/>
     <addaction name="actionRidge_detection"/>
    </widget>
@@ -130,9 +130,9 @@
     <string>Ridge detection</string>
    </property>
   </action>
-  <action name="actionCustom_plane_detection">
+  <action name="actionHorizontal_plane_detection">
    <property name="text">
-    <string>Custom plane detection</string>
+    <string>Horizontal plane detection</string>
    </property>
   </action>
  </widget>

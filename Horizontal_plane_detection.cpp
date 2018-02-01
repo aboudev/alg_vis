@@ -4,7 +4,7 @@
 // RVG, NLPR, CASIA
 ////////////////////////////////////////////////////
 
-#include "Custom_plane_detection.h"
+#include "Horizontal_plane_detection.h"
 
 #include <iostream>
 #include <fstream>
@@ -100,7 +100,7 @@ private:
 
 namespace Algs {
 
-void Custom_plane_detection::detect(
+void Horizontal_plane_detection::detect(
   const std::string &fname,
   const Params::Shape_detection &params)
 {
@@ -111,7 +111,7 @@ void Custom_plane_detection::detect(
   typedef CGAL::Shape_detection_3::Shape_detection_traits
     <Kernel2, Pwn_vector, Point_map, Normal_map> Traits;
   typedef CGAL::Shape_detection_3::Efficient_RANSAC<Traits> Efficient_ransac;
-  typedef Horizontal_plane<Traits> Horizonta_plane;
+  typedef Horizontal_plane<Traits> Horizontal_plane;
 
   m_points.clear();
   // Loads point set from a file.
@@ -148,7 +148,7 @@ void Custom_plane_detection::detect(
 
   Efficient_ransac ransac;
   ransac.set_input(m_points);
-  ransac.add_shape_factory<Horizonta_plane>();
+  ransac.add_shape_factory<Horizontal_plane>();
   ransac.preprocess();
   ransac.detect(parameters);
 
@@ -202,7 +202,7 @@ void Custom_plane_detection::detect(
       pts.push_back(m_points[pidx].first);
 
     const Kernel2::Plane_3 plane = static_cast<Kernel2::Plane_3>(
-      *dynamic_cast<Horizonta_plane *>(s.get()));
+      *dynamic_cast<Horizontal_plane *>(s.get()));
     const Kernel2::Point_3 origin = plane.projection(pts.front());
 
     Kernel2::Vector_3 base1 = plane.base1();
@@ -242,7 +242,7 @@ void Custom_plane_detection::detect(
     c = static_cast<std::size_t>(std::rand() % 255);
 }
 
-void Custom_plane_detection::draw()
+void Horizontal_plane_detection::draw()
 {
   if (m_points.empty())
     return;

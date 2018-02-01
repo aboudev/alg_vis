@@ -1,7 +1,7 @@
 #include "Scene.h"
 #include "Surface_simplification.h"
 #include "Shape_detection.h"
-#include "Custom_plane_detection.h"
+#include "Horizontal_plane_detection.h"
 #include "Ridge_detection.h"
 
 #include <iostream>
@@ -19,7 +19,7 @@ Scene::Scene() :
   m_view_polyhedron(false),
   m_surface_simplification(nullptr),
   m_shape_detection(nullptr),
-  m_custom_plane_detection(nullptr),
+  m_horizontal_plane_detection(nullptr),
   m_ridge_detection(nullptr) {
 }
 
@@ -30,8 +30,8 @@ Scene::~Scene() {
     delete m_surface_simplification;
   if (m_shape_detection)
     delete m_shape_detection;
-  if (m_custom_plane_detection)
-    delete m_custom_plane_detection;
+  if (m_horizontal_plane_detection)
+    delete m_horizontal_plane_detection;
   if (m_ridge_detection)
     delete m_ridge_detection;
 }
@@ -97,16 +97,16 @@ int Scene::shape_detection(const std::string &fname, const Params::Shape_detecti
   return 0;
 }
 
-int Scene::custom_plane_detection(const std::string &fname, const Params::Shape_detection &params)
+int Scene::horizontal_plane_detection(const std::string &fname, const Params::Shape_detection &params)
 {
-  if (m_custom_plane_detection)
-    delete m_custom_plane_detection;
+  if (m_horizontal_plane_detection)
+    delete m_horizontal_plane_detection;
 
-  m_custom_plane_detection = new Algs::Custom_plane_detection();
-  m_custom_plane_detection->detect(fname, params);
+  m_horizontal_plane_detection = new Algs::Horizontal_plane_detection();
+  m_horizontal_plane_detection->detect(fname, params);
 
   // update viewing bbox
-  m_bbox = m_custom_plane_detection->bbox();
+  m_bbox = m_horizontal_plane_detection->bbox();
   m_view_polyhedron = false;
 
   return 0;
@@ -138,8 +138,8 @@ void Scene::draw()
   if (m_shape_detection)
     m_shape_detection->draw();
 
-  if (m_custom_plane_detection)
-    m_custom_plane_detection->draw();
+  if (m_horizontal_plane_detection)
+    m_horizontal_plane_detection->draw();
 
   if (m_ridge_detection)
     m_ridge_detection->draw();

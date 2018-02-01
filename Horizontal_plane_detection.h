@@ -4,8 +4,8 @@
 // RVG, NLPR, CASIA
 ////////////////////////////////////////////////////
 
-#ifndef Custom_plane_detection_H
-#define Custom_plane_detection_H
+#ifndef HORIZONTAL_PLANE_DETECTION_H
+#define HORIZONTAL_PLANE_DETECTION_H
 
 #include "types.h"
 #include "parameters.h"
@@ -13,16 +13,16 @@
 namespace Algs {
 
 /************************************************************************/
-/* RANSAC Custom Plane Detection                                        */
-/* Plane with constraint parameter, e.g. horizontal                     */
+/* RANSAC Custom Horizontal Plane Detection                             */
+/* Other plane with constraint parameter (e.g. vertical) are possible.  */
 /************************************************************************/
-class Custom_plane_detection {
+class Horizontal_plane_detection {
   // Type declarations
   typedef std::pair<Kernel2::Point_3, Kernel2::Vector_3>       Point_with_normal;
   typedef std::vector<Point_with_normal>                       Pwn_vector;
 
 public:
-  Custom_plane_detection() {}
+  Horizontal_plane_detection() {}
 
   void detect(const std::string &fname, const Params::Shape_detection &params);
 
@@ -46,4 +46,4 @@ private:
 
 } // namespace Algs
 
-#endif // Custom_plane_detection_H
+#endif // HORIZONTAL_PLANE_DETECTION_H
