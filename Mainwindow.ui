@@ -64,6 +64,8 @@
     <addaction name="separator"/>
     <addaction name="actionHorizontal_plane_detection"/>
     <addaction name="separator"/>
+    <addaction name="actionUnit_normal_detection"/>
+    <addaction name="separator"/>
     <addaction name="actionRidge_detection"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -133,6 +135,11 @@
   <action name="actionHorizontal_plane_detection">
    <property name="text">
     <string>Horizontal plane detection</string>
+   </property>
+  </action>
+  <action name="actionUnit_normal_detection">
+   <property name="text">
+    <string>Unit normal detection</string>
    </property>
   </action>
  </widget>

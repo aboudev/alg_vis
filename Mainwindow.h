@@ -42,6 +42,7 @@ protected slots:
   void on_actionSurface_simplification_triggered();
   void on_actionShape_detection_triggered();
   void on_actionHorizontal_plane_detection_triggered();
+  void on_actionUnit_normal_detection_triggered();
   void on_actionRidge_detection_triggered();
 
   // view menu

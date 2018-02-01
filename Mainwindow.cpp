@@ -180,38 +180,6 @@ void Mainwindow::on_actionShape_detection_triggered()
   QApplication::restoreOverrideCursor();
 }
 
-void Mainwindow::on_actionRidge_detection_triggered()
-{
-  QSettings settings;
-  const QString filename = QFileDialog::getOpenFileName(
-    this,
-    tr("Triangle mesh"),
-    settings.value("ridge_detection_open_directory", ".").toString(),
-    tr("OFF files (*.off)"));
-  if (filename.isEmpty())
-    return;
-  settings.setValue("ridge_detection_open_directory", filename);
-
-  // Settings_dialog dial;
-  // dial.shape_detection->setEnabled(true);
-  // if (dial.exec() != QDialog::Accepted)
-  //   return;
-
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  // Params::Shape_detection params{
-  //   dial.shape_detection_probability->value(),
-  //   static_cast<std::size_t>(dial.shape_detection_min_points->value()),
-  //   dial.shape_detection_epsilon->value(),
-  //   dial.shape_detection_cluster_epsilon->value(),
-  //   dial.shape_detection_normal_threshold->value()};
-
-  scene->ridge_detection(filename.toStdString());
-
-  updateViewerBBox();
-  viewer->update();
-  QApplication::restoreOverrideCursor();
-}
-
 void Mainwindow::on_actionHorizontal_plane_detection_triggered()
 {
   QSettings settings;
@@ -238,6 +206,70 @@ void Mainwindow::on_actionHorizontal_plane_detection_triggered()
     dial.hplane_detection_normal_threshold->value()};
 
   scene->horizontal_plane_detection(filename.toStdString(), params);
+
+  updateViewerBBox();
+  viewer->update();
+  QApplication::restoreOverrideCursor();
+}
+
+void Mainwindow::on_actionUnit_normal_detection_triggered()
+{
+  QSettings settings;
+  const QString filename = QFileDialog::getOpenFileName(
+    this,
+    tr("Open point with normal"),
+    settings.value("unit_normal_detection_open_directory", ".").toString(),
+    tr("Point Cloud With Normal (*.ply *.pwn)"));
+  if (filename.isEmpty())
+    return;
+  settings.setValue("unit_normal_detection_open_directory", filename);
+
+  Settings_dialog dial;
+  dial.hplane_detection->setEnabled(true);
+  if (dial.exec() != QDialog::Accepted)
+    return;
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  Params::Shape_detection params{
+    dial.unormal_detection_probability->value(),
+    static_cast<std::size_t>(dial.unormal_detection_min_points->value()),
+    dial.unormal_detection_epsilon->value(),
+    dial.unormal_detection_cluster_epsilon->value(),
+    dial.unormal_detection_normal_threshold->value()};
+
+  scene->unit_normal_detection(filename.toStdString(), params);
+
+  updateViewerBBox();
+  viewer->update();
+  QApplication::restoreOverrideCursor();
+}
+
+void Mainwindow::on_actionRidge_detection_triggered()
+{
+  QSettings settings;
+  const QString filename = QFileDialog::getOpenFileName(
+    this,
+    tr("Triangle mesh"),
+    settings.value("ridge_detection_open_directory", ".").toString(),
+    tr("OFF files (*.off)"));
+  if (filename.isEmpty())
+    return;
+  settings.setValue("ridge_detection_open_directory", filename);
+
+  // Settings_dialog dial;
+  // dial.shape_detection->setEnabled(true);
+  // if (dial.exec() != QDialog::Accepted)
+  //   return;
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  // Params::Shape_detection params{
+  //   dial.shape_detection_probability->value(),
+  //   static_cast<std::size_t>(dial.shape_detection_min_points->value()),
+  //   dial.shape_detection_epsilon->value(),
+  //   dial.shape_detection_cluster_epsilon->value(),
+  //   dial.shape_detection_normal_threshold->value()};
+
+  scene->ridge_detection(filename.toStdString());
 
   updateViewerBBox();
   viewer->update();

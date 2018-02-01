@@ -2,6 +2,7 @@
 #include "Surface_simplification.h"
 #include "Shape_detection.h"
 #include "Horizontal_plane_detection.h"
+#include "Unit_normal_detection.h"
 #include "Ridge_detection.h"
 
 #include <iostream>
@@ -20,6 +21,7 @@ Scene::Scene() :
   m_surface_simplification(nullptr),
   m_shape_detection(nullptr),
   m_horizontal_plane_detection(nullptr),
+  m_unit_normal_detection(nullptr),
   m_ridge_detection(nullptr) {
 }
 
@@ -32,6 +34,8 @@ Scene::~Scene() {
     delete m_shape_detection;
   if (m_horizontal_plane_detection)
     delete m_horizontal_plane_detection;
+  if (m_unit_normal_detection)
+    delete m_unit_normal_detection;
   if (m_ridge_detection)
     delete m_ridge_detection;
 }
@@ -112,6 +116,21 @@ int Scene::horizontal_plane_detection(const std::string &fname, const Params::Sh
   return 0;
 }
 
+int Scene::unit_normal_detection(const std::string &fname, const Params::Shape_detection &params)
+{
+  if (m_unit_normal_detection)
+    delete m_unit_normal_detection;
+
+  m_unit_normal_detection = new Algs::Unit_normal_detection();
+  m_unit_normal_detection->detect(fname, params);
+
+  // update viewing bbox
+  m_bbox = m_unit_normal_detection->bbox();
+  m_view_polyhedron = false;
+
+  return 0;
+}
+
 int Scene::ridge_detection(const std::string &fname)
 {
   if (m_ridge_detection)
@@ -140,6 +159,9 @@ void Scene::draw()
 
   if (m_horizontal_plane_detection)
     m_horizontal_plane_detection->draw();
+
+  if (m_unit_normal_detection)
+    m_unit_normal_detection->draw();
 
   if (m_ridge_detection)
     m_ridge_detection->draw();
