@@ -33,6 +33,8 @@ private:
 
   // rendering data
   std::vector<std::vector<Point_3>> m_ridges;
+  std::vector<std::size_t> m_ridges_color;
+
   std::vector<Point_3> m_umbilics;
 };
 

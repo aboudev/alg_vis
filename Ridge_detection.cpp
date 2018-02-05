@@ -161,19 +161,61 @@ void Ridge_detection::detect(const std::string &fname)
 
   // to rendering data
   m_ridges.clear();
+  std::vector<double> ridge_mean_curvature;
   std::cout << "#ridges " << ridge_lines.size() << std::endl;
   for (const auto &rl : ridge_lines) {
+    // averaged mean curvature along the ridge line
+    double average_mean_curvature = 0.0;
+    double ridge_length = 0.0;
     std::vector<Point_3> ridge;
     for (const auto &rhe : *(rl->line())) {
+      const double mcp = (get(vertex_k1_pm, source(rhe.first, m_mesh))
+        + get(vertex_k2_pm, source(rhe.first, m_mesh))) / 2.0;
+      const double mcq = (get(vertex_k1_pm, target(rhe.first, m_mesh))
+        + get(vertex_k2_pm, target(rhe.first, m_mesh))) / 2.0;
+
+      // linear interpolation of ridge point
       const Vector_3 p = get(vpm, source(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Vector_3 q = get(vpm, target(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Point_3 pt = CGAL::ORIGIN + (p * rhe.second + (1.0 - rhe.second) * q);
+
+      if (!ridge.empty()) {
+        const double len = std::sqrt(CGAL::squared_distance(ridge.back(), pt));
+        // linear interpolation of mean curvature
+        average_mean_curvature += (mcp * rhe.second + (1.0 - rhe.second) * mcq) * len;
+        ridge_length += len;
+      }
+      else
+        average_mean_curvature = mcp * rhe.second + (1.0 - rhe.second) * mcq;
+
       ridge.push_back(pt);
     }
     m_ridges.push_back(ridge);
 
+    if (ridge.size() > 1 && ridge_length > 0.0) {
+      std::cout << ridge_length << std::endl;
+      average_mean_curvature /= ridge_length;
+    }
+    ridge_mean_curvature.push_back(average_mean_curvature);
+
     delete rl;
   }
+
+  std::for_each(ridge_mean_curvature.begin(), ridge_mean_curvature.end(),
+    [](double &c){
+      c = std::log(std::abs(c) + 1.0);
+    });
+  const double min_mean_curvature =
+    *std::min_element(ridge_mean_curvature.begin(), ridge_mean_curvature.end());
+  const double max_mean_curvature =
+    *std::max_element(ridge_mean_curvature.begin(), ridge_mean_curvature.end());
+  std::cout << min_mean_curvature << ' ' << max_mean_curvature << std::endl;
+  m_ridges_color.clear();
+  for (const auto &mc : ridge_mean_curvature)
+    m_ridges_color.push_back(std::size_t(
+      (mc - min_mean_curvature) / (max_mean_curvature - min_mean_curvature) * 255.0));
+  for (std::size_t i = 0; i < m_ridges_color.size(); ++i)
+    std::cout << ridge_mean_curvature[i] << ' ' << m_ridges_color[i] << std::endl;
 
   // UMBILICS
   //--------------------------------------------------------------------------
@@ -197,29 +239,30 @@ void Ridge_detection::detect(const std::string &fname)
 
 void Ridge_detection::draw()
 {
-  ::glEnable(GL_LIGHTING);
-  ::glColor3ub(192, 192, 192);
-  ::glBegin(GL_TRIANGLES);
-  BOOST_FOREACH(const face_descriptor f, faces(m_mesh)) {
-    const Vector_3 &n = get(fvm, f);
-    ::glNormal3d(n.x(), n.y(), n.z());
+  // ::glEnable(GL_LIGHTING);
+  // ::glColor3ub(192, 192, 192);
+  // ::glBegin(GL_TRIANGLES);
+  // BOOST_FOREACH(const face_descriptor f, faces(m_mesh)) {
+  //   const Vector_3 &n = get(fvm, f);
+  //   ::glNormal3d(n.x(), n.y(), n.z());
 
-    halfedge_descriptor h = halfedge(f, m_mesh);
-    const Point_3 &p0 = get(vpm, source(h, m_mesh));
-    const Point_3 &p1 = get(vpm, target(h, m_mesh));
-    const Point_3 &p2 = get(vpm, target(next(h, m_mesh), m_mesh));
-    ::glVertex3d(p0.x(), p0.y(), p0.z());
-    ::glVertex3d(p1.x(), p1.y(), p1.z());
-    ::glVertex3d(p2.x(), p2.y(), p2.z());
-  }
-  ::glEnd();
+  //   halfedge_descriptor h = halfedge(f, m_mesh);
+  //   const Point_3 &p0 = get(vpm, source(h, m_mesh));
+  //   const Point_3 &p1 = get(vpm, target(h, m_mesh));
+  //   const Point_3 &p2 = get(vpm, target(next(h, m_mesh), m_mesh));
+  //   ::glVertex3d(p0.x(), p0.y(), p0.z());
+  //   ::glVertex3d(p1.x(), p1.y(), p1.z());
+  //   ::glVertex3d(p2.x(), p2.y(), p2.z());
+  // }
+  // ::glEnd();
 
   ::glDisable(GL_LIGHTING);
-  ::glColor3ub(255, 0, 0);
-  ::glLineWidth(2.0);
-  for (const auto &r : m_ridges) {
+  ::glLineWidth(5.0);
+  for (std::size_t i = 0; i < m_ridges.size(); ++i) {
+    const std::size_t c = m_ridges_color[i];
+    ::glColor3ub(Color_256::r(c), Color_256::g(c), Color_256::b(c));
     ::glBegin(GL_LINE_STRIP);
-    for (const auto &p : r)
+    for (const auto &p : m_ridges[i])
       ::glVertex3d(p.x(), p.y(), p.z());
     ::glEnd();
   }

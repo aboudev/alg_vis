@@ -3,8 +3,8 @@
 
 #include <cstddef>
 
-// 256 color cheat sheet
-// Source: https://jonasjacek.github.io/colors/
+// Jet color mapping
+// http://paulbourke.net/miscellaneous/colourspace/01.dat
 
 class Color_256
 {
