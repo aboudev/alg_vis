@@ -161,61 +161,52 @@ void Ridge_detection::detect(const std::string &fname)
 
   // to rendering data
   m_ridges.clear();
-  std::vector<double> ridge_mean_curvature;
+  std::vector<double> ridge_strength;
   std::cout << "#ridges " << ridge_lines.size() << std::endl;
   for (const auto &rl : ridge_lines) {
-    // averaged mean curvature along the ridge line
-    double average_mean_curvature = 0.0;
+    // strength filtering
+    if (rl->strength() < 1.0)
+      continue;
+
     double ridge_length = 0.0;
     std::vector<Point_3> ridge;
     for (const auto &rhe : *(rl->line())) {
-      const double mcp = (get(vertex_k1_pm, source(rhe.first, m_mesh))
-        + get(vertex_k2_pm, source(rhe.first, m_mesh))) / 2.0;
-      const double mcq = (get(vertex_k1_pm, target(rhe.first, m_mesh))
-        + get(vertex_k2_pm, target(rhe.first, m_mesh))) / 2.0;
-
       // linear interpolation of ridge point
       const Vector_3 p = get(vpm, source(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Vector_3 q = get(vpm, target(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Point_3 pt = CGAL::ORIGIN + (p * rhe.second + (1.0 - rhe.second) * q);
 
-      if (!ridge.empty()) {
-        const double len = std::sqrt(CGAL::squared_distance(ridge.back(), pt));
-        // linear interpolation of mean curvature
-        average_mean_curvature += (mcp * rhe.second + (1.0 - rhe.second) * mcq) * len;
-        ridge_length += len;
-      }
-      else
-        average_mean_curvature = mcp * rhe.second + (1.0 - rhe.second) * mcq;
+      if (!ridge.empty())
+        ridge_length += std::sqrt(CGAL::squared_distance(ridge.back(), pt));
 
       ridge.push_back(pt);
     }
     m_ridges.push_back(ridge);
 
-    if (ridge.size() > 1 && ridge_length > 0.0) {
-      std::cout << ridge_length << std::endl;
-      average_mean_curvature /= ridge_length;
-    }
-    ridge_mean_curvature.push_back(average_mean_curvature);
+    // std::cout << ridge_length << std::endl;
+    std::cout <<
+      (rl->line_type() == CGAL::Ridge_type::MAX_CREST_RIDGE ? "MAX_CREST" : "MIN_CREST") << " "
+      << rl->strength() << " " << rl->sharpness() << std::endl;
+    ridge_strength.push_back(rl->strength());
 
     delete rl;
   }
 
-  std::for_each(ridge_mean_curvature.begin(), ridge_mean_curvature.end(),
-    [](double &c){
-      c = std::log(std::abs(c) + 1.0);
+  std::for_each(ridge_strength.begin(), ridge_strength.end(),
+    [](double &s){
+      s = std::log(std::abs(s) + 1.0);
     });
   const double min_mean_curvature =
-    *std::min_element(ridge_mean_curvature.begin(), ridge_mean_curvature.end());
+    *std::min_element(ridge_strength.begin(), ridge_strength.end());
   const double max_mean_curvature =
-    *std::max_element(ridge_mean_curvature.begin(), ridge_mean_curvature.end());
+    *std::max_element(ridge_strength.begin(), ridge_strength.end());
   std::cout << min_mean_curvature << ' ' << max_mean_curvature << std::endl;
   m_ridges_color.clear();
-  for (const auto &mc : ridge_mean_curvature)
+  for (const auto &mc : ridge_strength)
     m_ridges_color.push_back(std::size_t(
       (mc - min_mean_curvature) / (max_mean_curvature - min_mean_curvature) * 255.0));
   for (std::size_t i = 0; i < m_ridges_color.size(); ++i)
-    std::cout << ridge_mean_curvature[i] << ' ' << m_ridges_color[i] << std::endl;
+    std::cout << ridge_strength[i] << ' ' << m_ridges_color[i] << std::endl;
 
   // UMBILICS
   //--------------------------------------------------------------------------
