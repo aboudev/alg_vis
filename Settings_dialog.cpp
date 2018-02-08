@@ -45,6 +45,17 @@ void Settings_dialog::loadFromSettings()
   if (settings.contains("unormal_detection_normal_threshold"))
     unormal_detection_normal_threshold->setValue(settings.value("unormal_detection_normal_threshold").toDouble());
 
+  if (settings.contains("snormal_detection_probability"))
+    snormal_detection_probability->setValue(settings.value("snormal_detection_probability").toDouble());
+  if (settings.contains("snormal_detection_min_points"))
+    snormal_detection_min_points->setValue(settings.value("snormal_detection_min_points").toInt());
+  if (settings.contains("snormal_detection_epsilon"))
+    snormal_detection_epsilon->setValue(settings.value("snormal_detection_epsilon").toDouble());
+  if (settings.contains("snormal_detection_cluster_epsilon"))
+    snormal_detection_cluster_epsilon->setValue(settings.value("snormal_detection_cluster_epsilon").toDouble());
+  if (settings.contains("snormal_detection_normal_threshold"))
+    snormal_detection_normal_threshold->setValue(settings.value("snormal_detection_normal_threshold").toDouble());
+
   settings.endGroup();
 }
 
@@ -70,6 +81,12 @@ void Settings_dialog::saveToSettings()
   settings.setValue("unormal_detection_normal_threshold", unormal_detection_normal_threshold->value());
   settings.setValue("unormal_detection_cluster_epsilon", unormal_detection_cluster_epsilon->value());
   settings.setValue("unormal_detection_probability", unormal_detection_probability->value());
+
+  settings.setValue("snormal_detection_min_points", snormal_detection_min_points->value());
+  settings.setValue("snormal_detection_epsilon", snormal_detection_epsilon->value());
+  settings.setValue("snormal_detection_normal_threshold", snormal_detection_normal_threshold->value());
+  settings.setValue("snormal_detection_cluster_epsilon", snormal_detection_cluster_epsilon->value());
+  settings.setValue("snormal_detection_probability", snormal_detection_probability->value());
 
   settings.endGroup();
 }

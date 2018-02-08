@@ -57,6 +57,7 @@ if(CGAL_Qt5_FOUND AND Qt5_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND)
     Shape_detection.cpp
     Horizontal_plane_detection.cpp
     Unit_normal_detection.cpp
+    Symmetric_normal_detection.cpp
     Ridge_detection.cpp
     Surface_simplification.cpp
     Scene.cpp

@@ -66,6 +66,8 @@
     <addaction name="separator"/>
     <addaction name="actionUnit_normal_detection"/>
     <addaction name="separator"/>
+    <addaction name="actionSymmetric_normal_detection"/>
+    <addaction name="separator"/>
     <addaction name="actionRidge_detection"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -140,6 +142,11 @@
   <action name="actionUnit_normal_detection">
    <property name="text">
     <string>Unit normal detection</string>
+   </property>
+  </action>
+  <action name="actionSymmetric_normal_detection">
+   <property name="text">
+    <string>Symmetric normal detection</string>
    </property>
   </action>
  </widget>

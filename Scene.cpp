@@ -3,6 +3,7 @@
 #include "Shape_detection.h"
 #include "Horizontal_plane_detection.h"
 #include "Unit_normal_detection.h"
+#include "Symmetric_normal_detection.h"
 #include "Ridge_detection.h"
 
 #include <iostream>
@@ -22,6 +23,7 @@ Scene::Scene() :
   m_shape_detection(nullptr),
   m_horizontal_plane_detection(nullptr),
   m_unit_normal_detection(nullptr),
+  m_symmetric_normal_detection(nullptr),
   m_ridge_detection(nullptr) {
 }
 
@@ -131,6 +133,21 @@ int Scene::unit_normal_detection(const std::string &fname, const Params::Shape_d
   return 0;
 }
 
+int Scene::symmetric_normal_detection(const std::string &fname, const Params::Shape_detection &params)
+{
+  if (m_symmetric_normal_detection)
+    delete m_symmetric_normal_detection;
+
+  m_symmetric_normal_detection = new Algs::Symmetric_normal_detection();
+  m_symmetric_normal_detection->detect(fname, params);
+
+  // update viewing bbox
+  m_bbox = m_symmetric_normal_detection->bbox();
+  m_view_polyhedron = false;
+
+  return 0;
+}
+
 int Scene::ridge_detection(const std::string &fname)
 {
   if (m_ridge_detection)
@@ -162,6 +179,9 @@ void Scene::draw()
 
   if (m_unit_normal_detection)
     m_unit_normal_detection->draw();
+
+  if (m_symmetric_normal_detection)
+    m_symmetric_normal_detection->draw();
 
   if (m_ridge_detection)
     m_ridge_detection->draw();

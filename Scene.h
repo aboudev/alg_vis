@@ -9,6 +9,7 @@ namespace Algs {
   class Shape_detection;
   class Horizontal_plane_detection;
   class Unit_normal_detection;
+  class Symmetric_normal_detection;
   class Ridge_detection;
 }
 
@@ -43,6 +44,9 @@ public:
   // RANSAC unit normal detection on point cloud algorithm
   int unit_normal_detection(const std::string &fname, const Params::Shape_detection &params);
 
+  // RANSAC symmetric normal detection on point cloud algorithm
+  int symmetric_normal_detection(const std::string &fname, const Params::Shape_detection &params);
+
   // Ridge approximation
   int ridge_detection(const std::string &fname);
 
@@ -63,6 +67,7 @@ private:
   Algs::Shape_detection *m_shape_detection;
   Algs::Horizontal_plane_detection *m_horizontal_plane_detection;
   Algs::Unit_normal_detection *m_unit_normal_detection;
+  Algs::Symmetric_normal_detection *m_symmetric_normal_detection;
   Algs::Ridge_detection *m_ridge_detection;
 }; // end class Scene
 

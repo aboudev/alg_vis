@@ -244,6 +244,39 @@ void Mainwindow::on_actionUnit_normal_detection_triggered()
   QApplication::restoreOverrideCursor();
 }
 
+void Mainwindow::on_actionSymmetric_normal_detection_triggered()
+{
+  QSettings settings;
+  const QString filename = QFileDialog::getOpenFileName(
+    this,
+    tr("Open point with normal"),
+    settings.value("symmetric_normal_detection_open_directory", ".").toString(),
+    tr("Point Cloud With Normal (*.ply *.pwn)"));
+  if (filename.isEmpty())
+    return;
+  settings.setValue("symmetric_normal_detection_open_directory", filename);
+
+  Settings_dialog dial;
+  dial.snormal_detection->setEnabled(true);
+  if (dial.exec() != QDialog::Accepted)
+    return;
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+  Params::Shape_detection params{
+    dial.snormal_detection_probability->value(),
+    static_cast<std::size_t>(dial.snormal_detection_min_points->value()),
+    dial.snormal_detection_epsilon->value(),
+    dial.snormal_detection_cluster_epsilon->value(),
+    dial.snormal_detection_normal_threshold->value()};
+
+  scene->symmetric_normal_detection(filename.toStdString(), params);
+
+  updateViewerBBox();
+  viewer->update();
+  QApplication::restoreOverrideCursor();
+}
+
 void Mainwindow::on_actionRidge_detection_triggered()
 {
   QSettings settings;
