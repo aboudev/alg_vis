@@ -477,6 +477,13 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
+       <widget class="QCheckBox" name="snormal_detection_is_constrained">
+        <property name="text">
+         <string>Constrained</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="1">
          <spacer name="horizontalSpacer_4">

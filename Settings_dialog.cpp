@@ -55,6 +55,8 @@ void Settings_dialog::loadFromSettings()
     snormal_detection_cluster_epsilon->setValue(settings.value("snormal_detection_cluster_epsilon").toDouble());
   if (settings.contains("snormal_detection_normal_threshold"))
     snormal_detection_normal_threshold->setValue(settings.value("snormal_detection_normal_threshold").toDouble());
+  if (settings.contains("snormal_detection_is_constrained"))
+    snormal_detection_is_constrained->setChecked(settings.value("snormal_detection_is_constrained").toBool());
 
   settings.endGroup();
 }
@@ -87,6 +89,7 @@ void Settings_dialog::saveToSettings()
   settings.setValue("snormal_detection_normal_threshold", snormal_detection_normal_threshold->value());
   settings.setValue("snormal_detection_cluster_epsilon", snormal_detection_cluster_epsilon->value());
   settings.setValue("snormal_detection_probability", snormal_detection_probability->value());
+  settings.setValue("snormal_detection_is_constrained", snormal_detection_is_constrained->isChecked());
 
   settings.endGroup();
 }

@@ -25,7 +25,9 @@ class Symmetric_normal_detection {
 public:
   Symmetric_normal_detection() {}
 
-  void detect(const std::string &fname, const Params::Shape_detection &params);
+  void detect(const std::string &fname,
+    const Params::Shape_detection &params,
+    const bool is_constrained);
 
   const Bbox_3 &bbox() { return m_bbox; }
 

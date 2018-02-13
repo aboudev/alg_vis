@@ -45,7 +45,9 @@ public:
   int unit_normal_detection(const std::string &fname, const Params::Shape_detection &params);
 
   // RANSAC symmetric normal detection on point cloud algorithm
-  int symmetric_normal_detection(const std::string &fname, const Params::Shape_detection &params);
+  int symmetric_normal_detection(const std::string &fname,
+    const Params::Shape_detection &params,
+    const bool is_constrained);
 
   // Ridge approximation
   int ridge_detection(const std::string &fname);

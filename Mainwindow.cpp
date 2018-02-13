@@ -270,7 +270,10 @@ void Mainwindow::on_actionSymmetric_normal_detection_triggered()
     dial.snormal_detection_cluster_epsilon->value(),
     dial.snormal_detection_normal_threshold->value()};
 
-  scene->symmetric_normal_detection(filename.toStdString(), params);
+  scene->symmetric_normal_detection(
+    filename.toStdString(),
+    params,
+    dial.snormal_detection_is_constrained->isChecked());
 
   updateViewerBBox();
   viewer->update();

@@ -133,13 +133,16 @@ int Scene::unit_normal_detection(const std::string &fname, const Params::Shape_d
   return 0;
 }
 
-int Scene::symmetric_normal_detection(const std::string &fname, const Params::Shape_detection &params)
+int Scene::symmetric_normal_detection(
+  const std::string &fname,
+  const Params::Shape_detection &params,
+  const bool is_constrained)
 {
   if (m_symmetric_normal_detection)
     delete m_symmetric_normal_detection;
 
   m_symmetric_normal_detection = new Algs::Symmetric_normal_detection();
-  m_symmetric_normal_detection->detect(fname, params);
+  m_symmetric_normal_detection->detect(fname, params, is_constrained);
 
   // update viewing bbox
   m_bbox = m_symmetric_normal_detection->bbox();
