@@ -23,6 +23,8 @@
 #include <gl/gl.h>
 #include "Color_256.h"
 
+#define DEGENERATE_THRESHOLD 1e-4
+
 /*!
  * \brief Unit_normal derives from Shape_base.
  * Only calculate normal deviation.
@@ -33,36 +35,32 @@
  * instead of vector dot product. (Intuitive, nedd to justify)
  * Similarly, the Euclidean distance is defined as squared vector difference
  * instead of point to plane distance.
+ * \note Input shoulde be unit normal and the correspondiing points.
  */
 template <class Traits>
 class Unit_normal : public CGAL::Shape_detection_3::Shape_base<Traits> {
 public:
   typedef typename Traits::FT FT;
-  typedef typename Traits::Point_3 Point;
-  typedef typename Traits::Vector_3 Vector;
+  typedef typename Traits::Point_3 Point_3;
+  typedef typename Traits::Vector_3 Vector_3;
 
 public:
   Unit_normal() : CGAL::Shape_detection_3::Shape_base<Traits>() {}
 
   // Conversion function
-  operator typename Vector() {
+  operator typename Vector_3() {
     return m_normal;
   }
 
   // Computes squared Euclidean distance from query point to the shape.
-  virtual FT squared_distance(const Point &p) const {
-    // point to tangent plane Euclidean distance
-    // const FT sd = (p - m_normal_point) * m_normal;
-    // return sd * sd;
-
-    // squared vector difference
-    return (p - m_normal_point) * (p - m_normal_point);
+  virtual FT squared_distance(const Point_3 &p) const {
+    return CGAL::squared_distance(p, CGAL::ORIGIN + m_normal);
   }
 
   // Returns a string with shape parameters.
   virtual std::string info() const {
     std::stringstream sstr;
-    sstr << "Type: unit normal ("
+    sstr << "Type: Unit_normal ("
       << m_normal.x() << ' ' << m_normal.y() << ' ' << m_normal.z()
       << ") #Pts: " << this->m_indices.size();
     return sstr.str();
@@ -71,8 +69,17 @@ public:
 protected:
   // Constructs shape based on minimal set of samples from the input data.    
   virtual void create_shape(const std::vector<std::size_t> &indices) {
-    m_normal = this->normal(indices[0]);
-    m_normal_point = CGAL::ORIGIN + m_normal;
+    m_normal = this->normal(indices[0]) + this->normal(indices[1]) + this->normal(indices[2]);
+
+    if (m_normal.squared_length() < FT(DEGENERATE_THRESHOLD))
+      return;
+
+    //check deviation of the 3 normal
+    m_normal /= CGAL::sqrt(m_normal.squared_length());
+    for (std::size_t i = 0; i < 3; ++i)
+      if (m_normal * this->normal(indices[i]) < this->m_normal_threshold)
+        return;
+
     this->m_is_valid = true;
   }
 
@@ -81,12 +88,8 @@ protected:
     const std::vector<std::size_t> &indices,
     std::vector<FT> &dists) const {
     for (std::size_t i = 0; i < indices.size(); i++) {
-      // point to tangent plane Euclidean distance
-      // const FT sd = (this->point(indices[i]) - m_normal_point) * m_normal;
-      // dists[i] = sd * sd;
-
       // squared vector difference
-      dists[i] = (this->point(indices[i]) - m_normal_point) * (this->point(indices[i]) - m_normal_point);
+      dists[i] = CGAL::squared_distance(this->point(indices[i]), CGAL::ORIGIN + m_normal);
     }
   }
 
@@ -94,22 +97,24 @@ protected:
   virtual void cos_to_normal(
     const std::vector<std::size_t> &indices,
     std::vector<FT> &angles) const {
-    for (std::size_t i = 0; i < indices.size(); i++) {
-      // angles[i] = FT(1.0) -
-      //   (this->normal(indices[i]) - m_normal) * (this->normal(indices[i]) - m_normal);
+    for (std::size_t i = 0; i < indices.size(); i++)
       angles[i] = this->normal(indices[i]) * m_normal;
-    }
   }
 
   // Returns the number of required samples for construction.
   virtual std::size_t minimum_sample_size() const {
-    return 1;
+    // combine few samples gives bigger search space over limited data
+    return 3;
+  }
+
+  // no connected component concept in this shape
+  virtual std::size_t connected_component(std::vector<std::size_t>& indices, FT cluster_epsilon) {
+    return indices.size();
   }
 
 private:
-  // normal and normal point is basically the same thing
-  Vector m_normal;
-  Point m_normal_point;
+  // the unit normal
+  Vector_3 m_normal;
 };
 
 namespace Algs {
