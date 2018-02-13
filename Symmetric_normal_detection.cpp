@@ -23,62 +23,63 @@
 #include "Color_256.h"
 
 #define PI 3.1415926535897932384626433832795
+#define DEGENERATE_THRESHOLD 1e-4
 
 /*!
  * \brief Symmetric_normal derives from Shape_base.
  * This shape is more restrict than Unit_normal:
- *   - normals in a cone with up right z axis
  *   - z axis symmetric
+ * \note Input should be unit vector and corresponding points.
+ * \note symmetry may be extremely unbalanced
  */
-template <class Traits, int ConeSplit = 2>
+template <class Traits>
 class Symmetric_normal : public CGAL::Shape_detection_3::Shape_base<Traits> {
 public:
   typedef typename Traits::FT FT;
-  typedef typename Traits::Point_3 Point;
-  typedef typename Traits::Vector_3 Vector;
+  typedef typename Traits::Point_3 Point_3;
+  typedef typename Traits::Vector_3 Vector_3;
 
 public:
-  Symmetric_normal() :
-    CGAL::Shape_detection_3::Shape_base<Traits>(),
-    m_cone_cos(std::cos(PI / 2.0 / ConeSplit)) {}
+  Symmetric_normal() : CGAL::Shape_detection_3::Shape_base<Traits>() {}
 
   // Conversion function
-  operator typename Vector() {
+  operator typename Vector_3() {
     return m_normal;
   }
 
   // Computes squared Euclidean distance from query point to the shape.
-  virtual FT squared_distance(const Point &p) const {
-    // point to tangent plane Euclidean distance
-    // const FT sd = (p - m_normal_point) * m_normal;
-    // return sd * sd;
-
+  virtual FT squared_distance(const Point_3 &p) const {
     // squared vector difference
-    const FT d = CGAL::squared_distance(p, m_normal_point);
-    const FT d_sym = CGAL::squared_distance(p, m_normal_point_sym);
-    return d < d_sym ? d : d_sym;
+    const FT d0 = CGAL::squared_distance(p, CGAL::ORIGIN + m_normal);
+    const FT d1 = CGAL::squared_distance(p, CGAL::ORIGIN + m_normal_sym);
+    return d0 < d1 ? d0 : d1;
   }
 
   // Returns a string with shape parameters.
   virtual std::string info() const {
     std::stringstream sstr;
-    sstr << "Type: symmetric normal ("
+    sstr << "Type: Symmetric_normal ("
       << m_normal.x() << ' ' << m_normal.y() << ' ' << m_normal.z()
       << ") #Pts: " << this->m_indices.size();
     return sstr.str();
   }
 
 protected:
-  // Constructs shape based on minimal set of samples from the input data.    
+  // Constructs shape based on minimal set of samples from the input data.
   virtual void create_shape(const std::vector<std::size_t> &indices) {
-    m_normal = this->normal(indices[0]);
-    m_normal_sym = Vector(-m_normal.x(), -m_normal.y(), m_normal.z());
-    m_normal_point = CGAL::ORIGIN + m_normal;
-    m_normal_point_sym = Point(-m_normal_point.x(), -m_normal_point.y(), m_normal_point.z());
+    m_normal = this->normal(indices[0]) + this->normal(indices[1]) + this->normal(indices[2]);
+    if (m_normal.squared_length() < FT(DEGENERATE_THRESHOLD))
+      return;
 
-    // restrict to cone
-    if (m_normal.z() > m_cone_cos)
-      this->m_is_valid = true;
+    m_normal /= CGAL::sqrt(m_normal.squared_length());
+    //check deviation of the 3 normal
+    for (std::size_t i = 0; i < 3; ++i)
+      if (m_normal * this->normal(indices[i]) < this->m_normal_threshold)
+        return;
+
+    m_normal_sym = Vector_3(-m_normal.x(), -m_normal.y(), m_normal.z());
+
+    this->m_is_valid = true;
   }
 
   // Computes squared Euclidean distance from a set of points.
@@ -86,14 +87,10 @@ protected:
     const std::vector<std::size_t> &indices,
     std::vector<FT> &dists) const {
     for (std::size_t i = 0; i < indices.size(); i++) {
-      // point to tangent plane Euclidean distance
-      // const FT sd = (this->point(indices[i]) - m_normal_point) * m_normal;
-      // dists[i] = sd * sd;
-
       // squared vector difference
-      const FT d = CGAL::squared_distance(this->point(indices[i]), m_normal_point);
-      const FT d_sym = CGAL::squared_distance(this->point(indices[i]), m_normal_point_sym);
-      dists[i] = d < d_sym ? d : d_sym;
+      const FT d0 = CGAL::squared_distance(this->point(indices[i]), CGAL::ORIGIN + m_normal);
+      const FT d1 = CGAL::squared_distance(this->point(indices[i]), CGAL::ORIGIN + m_normal_sym);
+      dists[i] = d0 < d1 ? d0 : d1;
     }
   }
 
@@ -102,25 +99,16 @@ protected:
     const std::vector<std::size_t> &indices,
     std::vector<FT> &angles) const {
     for (std::size_t i = 0; i < indices.size(); i++) {
-      // angles[i] = FT(1.0) -
-      //   (this->normal(indices[i]) - m_normal) * (this->normal(indices[i]) - m_normal);
-      const FT c = this->normal(indices[i]) * m_normal;
-      const FT c_sym = this->normal(indices[i]) * m_normal_sym;
-      angles[i] = c > c_sym ? c : c_sym;
+      const FT c0 = this->normal(indices[i]) * m_normal;
+      const FT c1 = this->normal(indices[i]) * m_normal_sym;
+      angles[i] = c0 > c1 ? c0 : c1;
     }
   }
 
   // Returns the number of required samples for construction.
   virtual std::size_t minimum_sample_size() const {
-    return 1;
+    return 3;
   }
-
-  // if the shape is developable
-  // set this function to return true to use the internal
-  // planar parameterization to detect the connected component
-  // virtual bool supports_connected_component() const {
-  //   return true;
-  // };
 
   // no connected component concept in this shape
   virtual std::size_t connected_component(std::vector<std::size_t>& indices, FT cluster_epsilon) {
@@ -128,14 +116,9 @@ protected:
   }
 
 private:
-  // restricted cone range
-  const FT m_cone_cos;
-  // normal and normal point is basically the same thing
-  Vector m_normal;
-  Point m_normal_point;
-  // symmetric normal
-  Vector m_normal_sym;
-  Point m_normal_point_sym;
+  // normal and its symmetric counterpart
+  Vector_3 m_normal;
+  Vector_3 m_normal_sym;
 };
 
 namespace Algs {
