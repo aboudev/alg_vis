@@ -15,6 +15,9 @@
 #include <CGAL/Ridges.h>
 #include <CGAL/Umbilics.h>
 
+// filtering
+#include <CGAL/linear_least_squares_fitting_3.h>
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -161,27 +164,67 @@ void Ridge_detection::detect(const std::string &fname)
 
   // to rendering data
   m_ridges.clear();
+  m_fit_lines.clear();
   std::vector<double> ridge_strength;
+  std::vector<double> ridge_angle;
   std::cout << "#ridges " << ridge_lines.size() << std::endl;
   for (const auto &rl : ridge_lines) {
     // strength filtering
     if (rl->strength() < 1.0)
       continue;
 
-    double ridge_length = 0.0;
     std::vector<Point_3> ridge;
     for (const auto &rhe : *(rl->line())) {
       // linear interpolation of ridge point
       const Vector_3 p = get(vpm, source(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Vector_3 q = get(vpm, target(rhe.first, m_mesh)) - CGAL::ORIGIN;
       const Point_3 pt = CGAL::ORIGIN + (p * rhe.second + (1.0 - rhe.second) * q);
-
-      if (!ridge.empty())
-        ridge_length += std::sqrt(CGAL::squared_distance(ridge.back(), pt));
-
       ridge.push_back(pt);
     }
+
+    // filtering
+    assert(ridge.size() >= 2);
+    // test length
+    double len = 0.0;
+    Kernel::Point_3 pre = ridge.front();
+    for (const auto p : ridge) {
+      len += std::sqrt(CGAL::squared_distance(pre, p));
+      pre = p;
+    }
+    if (len < 2.0)
+      continue;
+    // test straightness
+    Kernel::Line_3 line;
+    Kernel::Point_3 centroid;
+
+    // fitting to segments leads to wrong results, don't know why
+    // std::vector<Kernel::Segment_3> segments;
+    // for (std::size_t i = 1; i < ridge.size(); ++i)
+    //   segments.push_back({ridge[i - 1], ridge[i]});
+    // const double quality = CGAL::linear_least_squares_fitting_3(
+    //   segments.begin(), segments.end(),
+    //   line, centroid, CGAL::Dimension_tag<1>());
+
+    const double quality = CGAL::linear_least_squares_fitting_3(
+      ridge.begin(), ridge.end(),
+      line, centroid, CGAL::Dimension_tag<0>());
+    std::cout << "#len " << len << std::endl;
+    std::cout << "#quality " << quality << std::endl;
+    if (quality < 0.5)
+      continue;
+
+    // test angle
+    Kernel::Vector_3 v = line.to_vector();
+    v /= std::sqrt(v.squared_length());
+    // std::cout << "#v " << v << std::endl;
+    // std::cout << "#angle " << std::abs(v.z()) << std::endl;
+    if (std::abs(v.z()) > 0.5)
+      continue;
+    ridge_angle.push_back(std::abs(v.z()));
+
     m_ridges.push_back(ridge);
+
+    m_fit_lines.push_back({centroid + v * len / 2.0, centroid - v * len / 2.0});
 
     // std::cout << ridge_length << std::endl;
     std::cout <<
@@ -192,21 +235,29 @@ void Ridge_detection::detect(const std::string &fname)
     delete rl;
   }
 
-  std::for_each(ridge_strength.begin(), ridge_strength.end(),
-    [](double &s){
-      s = std::log(std::abs(s) + 1.0);
-    });
-  const double min_mean_curvature =
-    *std::min_element(ridge_strength.begin(), ridge_strength.end());
-  const double max_mean_curvature =
-    *std::max_element(ridge_strength.begin(), ridge_strength.end());
-  std::cout << min_mean_curvature << ' ' << max_mean_curvature << std::endl;
+  // coloring to strength value
+  // std::for_each(ridge_strength.begin(), ridge_strength.end(),
+  //   [](double &s){
+  //     s = std::log(std::abs(s) + 1.0);
+  //   });
+  // const double min_mean_curvature =
+  //   *std::min_element(ridge_strength.begin(), ridge_strength.end());
+  // const double max_mean_curvature =
+  //   *std::max_element(ridge_strength.begin(), ridge_strength.end());
+  // std::cout << min_mean_curvature << ' ' << max_mean_curvature << std::endl;
+  // m_ridges_color.clear();
+  // for (const auto &mc : ridge_strength)
+  //   m_ridges_color.push_back(std::size_t(
+  //     (mc - min_mean_curvature) / (max_mean_curvature - min_mean_curvature) * 255.0));
+  // for (std::size_t i = 0; i < m_ridges_color.size(); ++i)
+  //   std::cout << ridge_strength[i] << ' ' << m_ridges_color[i] << std::endl;
+
+  // coloring to angle
   m_ridges_color.clear();
-  for (const auto &mc : ridge_strength)
-    m_ridges_color.push_back(std::size_t(
-      (mc - min_mean_curvature) / (max_mean_curvature - min_mean_curvature) * 255.0));
+  for (const auto &a : ridge_angle)
+    m_ridges_color.push_back(std::size_t(a * 255.0));
   for (std::size_t i = 0; i < m_ridges_color.size(); ++i)
-    std::cout << ridge_strength[i] << ' ' << m_ridges_color[i] << std::endl;
+    std::cout << ridge_angle[i] << ' ' << m_ridges_color[i] << std::endl;
 
   // UMBILICS
   //--------------------------------------------------------------------------
@@ -257,6 +308,17 @@ void Ridge_detection::draw()
       ::glVertex3d(p.x(), p.y(), p.z());
     ::glEnd();
   }
+
+  ::glBegin(GL_LINES);
+  for (std::size_t i = 0; i < m_ridges.size(); ++i) {
+    const std::size_t c = m_ridges_color[i];
+    ::glColor3ub(Color_256::r(c), Color_256::g(c), Color_256::b(c));
+    auto p = m_fit_lines[i].source();
+    ::glVertex3d(p.x(), p.y(), p.z());
+    p = m_fit_lines[i].target();
+    ::glVertex3d(p.x(), p.y(), p.z());
+  }
+  ::glEnd();
 
   ::glDisable(GL_LIGHTING);
   ::glColor3ub(0, 255, 0);
