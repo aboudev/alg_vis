@@ -172,8 +172,9 @@ void Shape_detection::draw()
     return;
 
   // draw point cloud with respect color
-  ::glDisable(GL_LIGHTING);
-  ::glPointSize(5.0);
+  // ::glDisable(GL_LIGHTING);
+  ::glEnable(GL_LIGHTING);
+  ::glPointSize(3.0);
   ::glBegin(GL_POINTS);
   for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
     if (m_point_shapes[pidx] >= 0) {
@@ -181,10 +182,12 @@ void Shape_detection::draw()
       ::glColor3ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx));
     }
     else
-      ::glColor3ub(0, 0, 0);
+      ::glColor3ub(192, 192, 192);
 
     const Kernel2::Point_3 &p = m_points[pidx].first;
     ::glVertex3d(p.x(), p.y(), p.z());
+    const Kernel2::Vector_3 &n = m_points[pidx].second;
+    ::glNormal3d(n.x(), n.y(), n.z());
   }
   ::glEnd();
 

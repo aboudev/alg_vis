@@ -323,6 +323,8 @@ void Symmetric_normal_detection::detect(
     std::vector<Kernel2::Vector_3> facade_directions;
     facade_directions.push_back({1.0, 0.0, 0.0});
     facade_directions.push_back({0.0, 1.0, 0.0});
+    // facade_directions.push_back({-0.996361, -0.0852311, 0});
+    // facade_directions.push_back({0.0852311, -0.996361, 0});
     Constrained_symmetric_normal::s_data = &facade_directions;
     ransac.add_shape_factory<Constrained_symmetric_normal>();
   }
@@ -368,8 +370,8 @@ void Symmetric_normal_detection::draw()
     return;
 
   // draw point cloud with respect color
-  ::glDisable(GL_LIGHTING);
-  ::glPointSize(5.0);
+  // ::glDisable(GL_LIGHTING);
+  ::glPointSize(3.0);
   ::glBegin(GL_POINTS);
   for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
     if (m_point_shapes[pidx] >= 0) {
@@ -377,7 +379,7 @@ void Symmetric_normal_detection::draw()
       ::glColor3ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx));
     }
     else
-      ::glColor3ub(0, 0, 0);
+      ::glColor3ub(192, 192, 192);
 
     const Kernel2::Point_3 &p = m_points[pidx].get<0>();
     ::glVertex3d(p.x(), p.y(), p.z());
@@ -391,7 +393,7 @@ void Symmetric_normal_detection::draw()
 
   // draw normals at bbox center
   ::glDisable(GL_LIGHTING);
-  ::glPointSize(5.0);
+  ::glPointSize(3.0);
   ::glBegin(GL_POINTS);
   for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
     if (m_point_shapes[pidx] >= 0) {
@@ -399,7 +401,7 @@ void Symmetric_normal_detection::draw()
       ::glColor3ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx));
     }
     else
-      ::glColor3ub(0, 0, 0);
+      ::glColor3ub(192, 192, 192);
 
     const Kernel2::Vector_3 &n = m_points[pidx].get<1>();
     ::glVertex3d(bbx_center.x() + n.x(), bbx_center.y() + n.y(), bbx_center.z() + n.z());
