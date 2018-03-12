@@ -173,23 +173,23 @@ void Shape_detection::draw()
 
   // draw point cloud with respect color
   // ::glDisable(GL_LIGHTING);
-  ::glEnable(GL_LIGHTING);
-  ::glPointSize(3.0);
-  ::glBegin(GL_POINTS);
-  for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
-    if (m_point_shapes[pidx] >= 0) {
-      const std::size_t cidx = m_shape_colors[m_point_shapes[pidx]];
-      ::glColor3ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx));
-    }
-    else
-      ::glColor3ub(192, 192, 192);
+  // ::glEnable(GL_LIGHTING);
+  // ::glPointSize(3.0);
+  // ::glBegin(GL_POINTS);
+  // for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
+  //   if (m_point_shapes[pidx] >= 0) {
+  //     const std::size_t cidx = m_shape_colors[m_point_shapes[pidx]];
+  //     ::glColor3ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx));
+  //   }
+  //   else
+  //     ::glColor3ub(192, 192, 192);
 
-    const Kernel2::Point_3 &p = m_points[pidx].first;
-    ::glVertex3d(p.x(), p.y(), p.z());
-    const Kernel2::Vector_3 &n = m_points[pidx].second;
-    ::glNormal3d(n.x(), n.y(), n.z());
-  }
-  ::glEnd();
+  //   const Kernel2::Vector_3 &n = m_points[pidx].second;
+  //   ::glNormal3d(n.x(), n.y(), n.z());
+  //   const Kernel2::Point_3 &p = m_points[pidx].first;
+  //   ::glVertex3d(p.x(), p.y(), p.z());
+  // }
+  // ::glEnd();
 
   // draw convex hull of shape points
   ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -198,7 +198,7 @@ void Shape_detection::draw()
   for (std::size_t sidx = 0; sidx < m_convex_hulls.size(); ++sidx) {
     const auto &cvh = m_convex_hulls[sidx];
     const std::size_t cidx = m_shape_colors[sidx];
-    ::glColor4ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx), 150);
+    ::glColor4ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx), 180);
     ::glBegin(GL_POLYGON);
     // ::glBegin(GL_LINE_LOOP);
     for (const auto &p : cvh)

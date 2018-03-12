@@ -30,6 +30,7 @@ Scene::Scene() :
 Scene::~Scene() {
   if (m_pPolyhedron)
     delete m_pPolyhedron;
+
   if (m_surface_simplification)
     delete m_surface_simplification;
   if (m_shape_detection)
@@ -38,6 +39,8 @@ Scene::~Scene() {
     delete m_horizontal_plane_detection;
   if (m_unit_normal_detection)
     delete m_unit_normal_detection;
+  if (m_symmetric_normal_detection)
+    delete m_symmetric_normal_detection;
   if (m_ridge_detection)
     delete m_ridge_detection;
 }
@@ -75,8 +78,7 @@ int Scene::open(const std::string &fname)
 
 int Scene::surface_simplification(const std::string &fname)
 {
-  if (m_surface_simplification)
-    delete m_surface_simplification;
+  delete_all_algorithms();
 
   m_surface_simplification = new Algs::Surface_simplification();
   m_surface_simplification->simplify(fname);
@@ -90,8 +92,7 @@ int Scene::surface_simplification(const std::string &fname)
 
 int Scene::shape_detection(const std::string &fname, const Params::Shape_detection &params)
 {
-  if (m_shape_detection)
-    delete m_shape_detection;
+  delete_all_algorithms();
 
   m_shape_detection = new Algs::Shape_detection();
   m_shape_detection->detect(fname, params);
@@ -105,8 +106,7 @@ int Scene::shape_detection(const std::string &fname, const Params::Shape_detecti
 
 int Scene::horizontal_plane_detection(const std::string &fname, const Params::Shape_detection &params)
 {
-  if (m_horizontal_plane_detection)
-    delete m_horizontal_plane_detection;
+  delete_all_algorithms();
 
   m_horizontal_plane_detection = new Algs::Horizontal_plane_detection();
   m_horizontal_plane_detection->detect(fname, params);
@@ -120,8 +120,7 @@ int Scene::horizontal_plane_detection(const std::string &fname, const Params::Sh
 
 int Scene::unit_normal_detection(const std::string &fname, const Params::Shape_detection &params)
 {
-  if (m_unit_normal_detection)
-    delete m_unit_normal_detection;
+  delete_all_algorithms();
 
   m_unit_normal_detection = new Algs::Unit_normal_detection();
   m_unit_normal_detection->detect(fname, params);
@@ -138,8 +137,7 @@ int Scene::symmetric_normal_detection(
   const Params::Shape_detection &params,
   const bool is_constrained)
 {
-  if (m_symmetric_normal_detection)
-    delete m_symmetric_normal_detection;
+  delete_all_algorithms();
 
   m_symmetric_normal_detection = new Algs::Symmetric_normal_detection();
   m_symmetric_normal_detection->detect(fname, params, is_constrained);
@@ -153,8 +151,7 @@ int Scene::symmetric_normal_detection(
 
 int Scene::ridge_detection(const std::string &fname)
 {
-  if (m_ridge_detection)
-    delete m_ridge_detection;
+  delete_all_algorithms();
 
   m_ridge_detection = new Algs::Ridge_detection();
   m_ridge_detection->detect(fname);
@@ -207,4 +204,26 @@ void Scene::render_polyhedron()
     ::glVertex3d(b.x(), b.y(), b.z());
   }
   ::glEnd();
+}
+
+void Scene::delete_all_algorithms()
+{
+  if (m_surface_simplification)
+    delete m_surface_simplification;
+  m_surface_simplification = nullptr;
+  if (m_shape_detection)
+    delete m_shape_detection;
+  m_shape_detection = nullptr;
+  if (m_horizontal_plane_detection)
+    delete m_horizontal_plane_detection;
+  m_horizontal_plane_detection = nullptr;
+  if (m_unit_normal_detection)
+    delete m_unit_normal_detection;
+  m_unit_normal_detection = nullptr;
+  if (m_symmetric_normal_detection)
+    delete m_symmetric_normal_detection;
+  m_symmetric_normal_detection = nullptr;
+  if (m_ridge_detection)
+    delete m_ridge_detection;
+  m_ridge_detection = nullptr;
 }

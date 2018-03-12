@@ -57,6 +57,10 @@ public:
   void render_polyhedron();
 
 private:
+  // avoid rendering interference
+  void delete_all_algorithms();
+
+private:
   // member data
   Polyhedron *m_pPolyhedron;
   Bbox_3 m_bbox;
