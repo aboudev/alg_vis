@@ -191,14 +191,26 @@ void Shape_detection::draw()
   // }
   // ::glEnd();
 
+  // draw boundary
+  for (std::size_t sidx = 0; sidx < m_convex_hulls.size(); ++sidx) {
+    const auto &cvh = m_convex_hulls[sidx];
+    const std::size_t cidx = m_shape_colors[sidx];
+    ::glColor4ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx), 200);
+    ::glBegin(GL_LINE_LOOP);
+    for (const auto &p : cvh)
+      ::glVertex3d(p.x(), p.y(), p.z());
+    ::glEnd();
+  }
+
   // draw convex hull of shape points
+  ::glEnable(GL_LIGHTING);
   ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   ::glEnable(GL_BLEND);
   ::glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   for (std::size_t sidx = 0; sidx < m_convex_hulls.size(); ++sidx) {
     const auto &cvh = m_convex_hulls[sidx];
     const std::size_t cidx = m_shape_colors[sidx];
-    ::glColor4ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx), 180);
+    ::glColor4ub(Color_256::r(cidx), Color_256::g(cidx), Color_256::b(cidx), 200);
     ::glBegin(GL_POLYGON);
     // ::glBegin(GL_LINE_LOOP);
     for (const auto &p : cvh)

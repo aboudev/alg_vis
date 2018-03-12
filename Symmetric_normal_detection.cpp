@@ -399,12 +399,12 @@ void Symmetric_normal_detection::draw()
   const Kernel2::Point_3 sphere_center(
     (m_bbox.xmin() + m_bbox.xmax()) / 2.0,
     (m_bbox.ymin() + m_bbox.ymax()) / 2.0,
-    (m_bbox.zmax() - m_bbox.zmin()) / 2.0 + m_bbox.zmax());
+    m_bbox.zmin() - (m_bbox.zmax() - m_bbox.zmin()));
 
   // draw normals at bbox center
   // ::glDisable(GL_LIGHTING);
   ::glEnable(GL_LIGHTING);
-  ::glPointSize(2.0);
+  ::glPointSize(1.0);
   ::glBegin(GL_POINTS);
   for (std::size_t pidx = 0; pidx < m_points.size(); ++pidx) {
     if (m_point_shapes[pidx] >= 0) {
