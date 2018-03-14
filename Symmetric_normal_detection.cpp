@@ -324,13 +324,13 @@ void Symmetric_normal_detection::detect(
   ransac.set_input(m_points);
   if (is_constrained) {
     std::vector<Kernel2::Vector_3> facade_directions;
-    // facade_directions.push_back({1.0, 0.0, 0.0});
-    // facade_directions.push_back({0.0, 1.0, 0.0});
+    facade_directions.push_back({1.0, 0.0, 0.0});
+    facade_directions.push_back({0.0, 1.0, 0.0});
 
     // test2
-    const double angle = 81.0 / 180.0 * PI;
-    facade_directions.push_back({std::cos(angle), std::sin(angle), 0});
-    facade_directions.push_back({std::cos(angle + PI / 2.0), std::sin(angle + PI / 2.0), 0});
+    // const double angle = 81.0 / 180.0 * PI;
+    // facade_directions.push_back({std::cos(angle), std::sin(angle), 0});
+    // facade_directions.push_back({std::cos(angle + PI / 2.0), std::sin(angle + PI / 2.0), 0});
 
     Constrained_symmetric_normal::s_data = &facade_directions;
     ransac.add_shape_factory<Constrained_symmetric_normal>();
@@ -419,6 +419,39 @@ void Symmetric_normal_detection::draw()
     const Kernel2::Vector_3 &p = m_points[pidx].get<1>();
     ::glVertex3d(sphere_center.x() + p.x(), sphere_center.y() + p.y(), sphere_center.z() + p.z());
   }
+  ::glEnd();
+
+  // draw facade direction and z axis plane
+  // test2, facade direction
+  const double len = 2.0;
+  // const double angle = 81.0 / 180.0 * PI;
+  // const double fd0[] = {std::cos(angle), std::sin(angle), 0};
+  // const double fd1[] = {std::cos(angle + PI / 2.0), std::sin(angle + PI / 2.0), 0};
+  // ::glEnable(GL_LIGHTING);
+  ::glDisable(GL_LIGHTING);
+  ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ::glEnable(GL_BLEND);
+  ::glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  ::glColor4ub(0, 0, 192, 100);
+  ::glBegin(GL_POLYGON);
+    ::glVertex3d(len + sphere_center.x(), len + sphere_center.y(), 0 + sphere_center.z());
+    ::glVertex3d(len + sphere_center.x(), -len + sphere_center.y(), 0 + sphere_center.z());
+    ::glVertex3d(-len + sphere_center.x(), -len + sphere_center.y(), 0 + sphere_center.z());
+    ::glVertex3d(-len + sphere_center.x(), len + sphere_center.y(), 0 + sphere_center.z());
+  ::glEnd();
+  ::glColor4ub(0, 192, 0, 100);
+  ::glBegin(GL_POLYGON);
+    ::glVertex3d(len + sphere_center.x(), 0 + sphere_center.y(), len + sphere_center.z());
+    ::glVertex3d(len + sphere_center.x(), 0 + sphere_center.y(), -len + sphere_center.z());
+    ::glVertex3d(-len + sphere_center.x(), 0 + sphere_center.y(), -len + sphere_center.z());
+    ::glVertex3d(-len + sphere_center.x(), 0 + sphere_center.y(), len + sphere_center.z());
+  ::glEnd();
+  ::glColor4ub(192, 0, 0, 100);
+  ::glBegin(GL_POLYGON);
+    ::glVertex3d(0 + sphere_center.x(), len + sphere_center.y(), len + sphere_center.z());
+    ::glVertex3d(0 + sphere_center.x(), len + sphere_center.y(), -len + sphere_center.z());
+    ::glVertex3d(0 + sphere_center.x(), -len + sphere_center.y(), -len + sphere_center.z());
+    ::glVertex3d(0 + sphere_center.x(), -len + sphere_center.y(), len + sphere_center.z());
   ::glEnd();
 }
 
